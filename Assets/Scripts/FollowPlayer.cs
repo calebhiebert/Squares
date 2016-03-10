@@ -3,16 +3,21 @@ using System.Collections;
 
 public class FollowPlayer : MonoBehaviour
 {
-
+    // the target for the camera to follow
     public Transform target;
-    public float smoothing;
 	
+
+    // called every frame
 	void Update () {
 	    if (target != null)
 	    {
-	        /*var pos = Vector3.Lerp(transform.position, target.position, Time.deltaTime*smoothing);*/
+            // get the position of the target
 	        var pos = target.position;
+
+            // move the camera back in z space so it can see everything
 	        pos.z = -10;
+
+            // set the camera's position
 	        transform.position = pos;
 	    }
 	}

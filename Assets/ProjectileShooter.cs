@@ -4,7 +4,7 @@ using System.Security.Policy;
 
 public class ProjectileShooter : MonoBehaviour
 {
-
+    // the projectile to spawn
     public GameObject projectile;
     public Transform rotationFrom;
     public float recoil;

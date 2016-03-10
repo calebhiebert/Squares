@@ -13,7 +13,12 @@ public class Player : MonoBehaviour {
 	void Start () {
         _rigidBody = GetComponent<Rigidbody2D>();
         _jumpCollider = GetComponent<CircleCollider2D>();
-	}
+
+        foreach (var spr in GetComponentsInChildren<SpriteRenderer>())
+        {
+            spr.color = color;
+        }
+    }
 	
 	// Update is called once per frame
 	void Update () {
@@ -24,11 +29,6 @@ public class Player : MonoBehaviour {
         if(Input.GetKeyDown(KeyCode.Space) && _jumpCollider.IsTouchingLayers(jumpMask))
         {
             _rigidBody.AddForce(new Vector2(0, jumpForce));
-        }
-
-        foreach(var spr in GetComponentsInChildren<SpriteRenderer>())
-        {
-            spr.color = color;
         }
 	}
 }
