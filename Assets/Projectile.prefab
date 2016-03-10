@@ -135,6 +135,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _deathSystem: {fileID: 19873866}
   _shootForce: 800
+  damage: 5
 --- !u!198 &19822008
 ParticleSystem:
   m_ObjectHideFlags: 1

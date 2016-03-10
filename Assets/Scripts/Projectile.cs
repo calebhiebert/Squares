@@ -13,6 +13,8 @@ public class Projectile : MonoBehaviour
     // the amount of force that will be applied to the bullet when it is spawned
     public float _shootForce;
 
+    public int damage;
+
     // called when the bullet is spawned
 	void Awake ()
 	{
@@ -54,6 +56,11 @@ public class Projectile : MonoBehaviour
     // called when the bullet touches something
     void OnCollisionEnter2D(Collision2D other)
     {
+        var hp = other.collider.GetComponentInParent<Health>();
+
+        if (hp != null)
+            hp.Current -= damage;
+
         // call the death method
         Explode();
     }
