@@ -1,67 +1,47 @@
-﻿using UnityEngine;
-using System.Collections;
+using UnityEngine;
 
-// Projectile: This class goes on every bullet object when it is spawned
-public class Projectile : MonoBehaviour
+namespace Assets
 {
-    // the rigidbody attached to the bullet
-    private Rigidbody2D _rigidbody;
-
-    // a particle system to be played when the bullet is removed
-    public ParticleSystem _deathSystem;
-
-    // the amount of force that will be applied to the bullet when it is spawned
-    public float _shootForce;
-
-    public int damage;
-
-    // called when the bullet is spawned
-	void Awake ()
-	{
-        // get components from bullet
-	    _rigidbody = GetComponent<Rigidbody2D>();
-	}
-
-    void Start()
+    public class Projectile : MonoBehaviour
     {
-        // add the force to move the bullet
-        _rigidbody.AddRelativeForce(new Vector2(0, _shootForce));
-    }
+        public float Force;
+        public float ExplosionForce;
+        public float ExplosionRadius;
 
-    // called when the bullet dies
-    void Explode()
-    {
-        // if a death particle system is defined, play it
-        if (_deathSystem != null)
-        {
-            _deathSystem.Play();
+        public ParticleSystem Trail;
+
+        void Start () {
+	        GetComponent<Rigidbody2D>().AddRelativeForce(Vector2.up * Force);
+
+            Destroy(gameObject, 5.0f);
         }
 
-        // destroy the bullet
-        Destroy(gameObject);
+        void OnCollisionEnter2D(Collision2D other)
+        {
+            ImpactSystem.current.MakeImpact(ImpactSystem.current.explode, transform.position, 1);
 
-        // destroy the particle trail after a delay
-        Destroy(GetComponentInChildren<ParticleSystem>().gameObject, 1.0f);
+            Trail.transform.SetParent(null);
+            Destroy(Trail.gameObject, 2);
 
-        // destroy the death system after a delay
-        Destroy(_deathSystem.gameObject, 1.0f);
+            Destroy(gameObject);
 
-        // detach the death system from the bullet
-        _deathSystem.gameObject.transform.SetParent(null, true);
+            foreach (var obj in Physics2D.OverlapCircleAll(transform.position, ExplosionRadius))
+            {
+                if(obj.attachedRigidbody != null)
+                    AddExplosionForce(obj.attachedRigidbody, ExplosionForce, transform.position, ExplosionRadius);
+            }
+        }
 
-        // detach the particle trail from the bullet so it stays after the bullet is deleted
-        GetComponentInChildren<ParticleSystem>().gameObject.transform.SetParent(null, true);
-    }
+        public static void AddExplosionForce(Rigidbody2D body, float expForce, Vector3 expPosition, float expRadius)
+        {
+            var dir = (body.transform.position - expPosition);
+            float calc = 1 - (dir.magnitude / expRadius);
+            if (calc <= 0)
+            {
+                calc = 0;
+            }
 
-    // called when the bullet touches something
-    void OnCollisionEnter2D(Collision2D other)
-    {
-        var hp = other.collider.GetComponentInParent<Health>();
-
-        if (hp != null)
-            hp.Current -= damage;
-
-        // call the death method
-        Explode();
+            body.AddForce(dir.normalized * expForce * calc);
+        }
     }
 }
