@@ -310,9 +310,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7206f64102326aa48b0c4d841f3e526a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SmoothingAmount: 12
   HorizontalMoveForce: 35
   JumpForce: 420
+  CopycatFrameDelay: 5
   JumpMask:
     serializedVersion: 2
     m_Bits: 4294967295

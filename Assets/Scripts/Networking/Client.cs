@@ -94,8 +94,10 @@ namespace Assets.Scripts.Networking
                     HandlePlayerData(msg);
                     break;
                 case NetObject.Type.PlayerPositionUpdate:
+                    HandlePositionUpdate(msg);
                     break;
                 case NetObject.Type.PlayerPhysicsUpdate:
+                    HandlePhysicsUpdate(msg);
                     break;
                 case NetObject.Type.PlayerMouseUpdate:
                     break;
@@ -110,6 +112,28 @@ namespace Assets.Scripts.Networking
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        private void HandlePhysicsUpdate(NetIncomingMessage msg)
+        {
+            if(NetworkMain.IsServer)
+                return;
+
+            var id = msg.ReadByte();
+
+            if(_players.ContainsKey(id))
+                _players[id].UnpackPhysics(msg);
+        }
+
+        private void HandlePositionUpdate(NetIncomingMessage msg)
+        {
+            if(NetworkMain.IsServer)
+                return;
+
+            var id = msg.ReadByte();
+
+            if(_players.ContainsKey(id))
+                _players[id].UnpackPosition(msg);
         }
 
         private void HandleRegistrationResponse(NetIncomingMessage msg)

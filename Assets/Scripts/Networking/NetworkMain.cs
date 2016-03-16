@@ -19,6 +19,8 @@ namespace Assets.Scripts.Networking
         public string HostAdress = "127.0.0.1";
         public int HostPort = 9888;
         public float SimulatedPing = 50;
+        public float ServerUpdatesPerSecond = 25;
+        public float ServerTimeout = 5;
 
         void Update()
         {
@@ -100,7 +102,8 @@ namespace Assets.Scripts.Networking
             if (Client.Current == null)
                 Client.Current = new Client(new NetPeerConfiguration(ApplicationIdentification)
                 {
-                    SimulatedMinimumLatency = SimulatedPing / 2.0f
+                    SimulatedMinimumLatency = SimulatedPing / 2.0f,
+                    ConnectionTimeout = ServerTimeout
                 });
 
             if (Server.Current != null)

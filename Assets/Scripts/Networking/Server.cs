@@ -17,6 +17,8 @@ namespace Assets.Scripts.Networking
 
         private byte _idCounter = 0;
 
+        private float _lastUpdateTime = 0;
+
         public Server(NetPeerConfiguration config, Client attachedClient) : base(config)
         {
             Start();
@@ -26,29 +28,64 @@ namespace Assets.Scripts.Networking
 
         public void Update()
         {
-            if ((_incoming = ReadMessage()) == null) return;
-
-            switch (_incoming.MessageType)
+            if ((_incoming = ReadMessage()) != null)
             {
-                case NetIncomingMessageType.DebugMessage:
-                    Debug.Log("[S][INFO] " + _incoming.ReadString());
-                    break;
+                switch (_incoming.MessageType)
+                {
+                    case NetIncomingMessageType.DebugMessage:
+                        Debug.Log("[S][INFO] " + _incoming.ReadString());
+                        break;
 
-                case NetIncomingMessageType.ErrorMessage:
-                    Debug.Log("[S][ERROR]" + _incoming.ReadString());
-                    break;
+                    case NetIncomingMessageType.ErrorMessage:
+                        Debug.Log("[S][ERROR]" + _incoming.ReadString());
+                        break;
 
-                case NetIncomingMessageType.StatusChanged:
-                    Debug.Log("[S][STATUS] " + Status);
-                    break;
+                    case NetIncomingMessageType.StatusChanged:
+                        Debug.Log(string.Format("[S][STATUS][{1}] {0}", Status, _incoming.SenderConnection));
+                        break;
 
-                case NetIncomingMessageType.WarningMessage:
-                    Debug.Log("[S][WARN] " + _incoming.ReadString());
-                    break;
+                    case NetIncomingMessageType.WarningMessage:
+                        Debug.Log("[S][WARN] " + _incoming.ReadString());
+                        break;
 
-                case NetIncomingMessageType.Data:
-                    HandleData(_incoming);
-                    break;
+                    case NetIncomingMessageType.Data:
+                        HandleData(_incoming);
+                        break;
+                }
+            }
+
+            if (Time.time > _lastUpdateTime + 1/NetworkMain.Current.ServerUpdatesPerSecond)
+            {
+                SendUpdates();
+                _lastUpdateTime = Time.time;
+            }
+        }
+
+        private void SendUpdates()
+        {
+            foreach (var player in _players.Values)
+            {
+                /* Send Positions To Everyone */
+                var pos = CreateMessage();
+                
+                pos.Write((byte)NetObject.Type.PlayerPositionUpdate, NetObject.IndentifierNumOfBits);
+
+                pos.Write(player.NetId);
+
+                pos = player.PackPosition(pos);
+
+                SendToAll(pos, null, NetDeliveryMethod.UnreliableSequenced, 3);
+
+                /* Send Physics To Everyone */
+                var phys = CreateMessage();
+
+                phys.Write((byte)NetObject.Type.PlayerPhysicsUpdate, NetObject.IndentifierNumOfBits);
+
+                phys.Write(player.NetId);
+
+                phys = player.PackPhysics(phys);
+
+                SendToAll(phys, null, NetDeliveryMethod.UnreliableSequenced, 4);
             }
         }
 

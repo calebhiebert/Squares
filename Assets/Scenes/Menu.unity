@@ -563,6 +563,8 @@ MonoBehaviour:
   HostAdress: 127.0.0.1
   HostPort: 9888
   SimulatedPing: 0.05
+  ServerUpdatesPerSecond: 20
+  ServerTimeout: 5
 --- !u!224 &1012939872
 RectTransform:
   m_ObjectHideFlags: 0

@@ -13,8 +13,6 @@ namespace Assets.Scripts
     {
         public static List<PlayerController> ActivePlayers = new List<PlayerController>();
 
-        public float SmoothingAmount;
-
         public float HorizontalMoveForce;
         public float JumpForce;
         public int CopycatFrameDelay;
@@ -66,14 +64,14 @@ namespace Assets.Scripts
 
         private void NetPhysicsReceived(Vector2 netVelocity, float netAngularVelocity)
         {
-            TargetVelocity = netVelocity;
-            TargetAngularVelocity = netAngularVelocity;
+            _rigidbody.velocity = netVelocity;
+            _rigidbody.angularVelocity = netAngularVelocity;
         }
 
         private void NetPosReceived(Vector2 netPosition, Quaternion netRotation)
         {
-            TargetPosition = netPosition;
-            TargetRotation = netRotation;
+            transform.position = netPosition;
+            transform.rotation = netRotation;
         }
 
         void Update()
@@ -102,16 +100,6 @@ namespace Assets.Scripts
 
         void FixedUpdate()
         {
-            if (!NetworkMain.IsServer)
-            {
-                transform.position = Vector2.Lerp(transform.position, TargetPosition, Time.deltaTime * SmoothingAmount);
-                transform.rotation = Quaternion.Lerp(transform.rotation, TargetRotation, Time.deltaTime*SmoothingAmount * 2);
-
-                _rigidbody.velocity = Vector2.Lerp(_rigidbody.velocity, TargetVelocity, Time.deltaTime*SmoothingAmount);
-                _rigidbody.angularVelocity = Mathf.Lerp(_rigidbody.angularVelocity, TargetAngularVelocity,
-                    Time.deltaTime*SmoothingAmount * 2);
-            }
-
             if (NetPlayer.IsLocal)
             {
                 CurrentControls = Controls.Poll();
@@ -164,19 +152,6 @@ namespace Assets.Scripts
 
         public Controls CurrentControls { get; set; }
 
-        public Vector2 TargetPosition { get; set; }
-
-        public Vector2 TargetVelocity { get; set; }
-
-        public Quaternion TargetRotation { get; set; }
-
-        public float TargetAngularVelocity { get; set; }
-
         public Vector2 WorldMousePos { get; set; }
-
-        public bool CanJump
-        {
-            get { return _jumpAllowance > 0; }
-        }
     }
 }
