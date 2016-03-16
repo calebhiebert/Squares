@@ -66,26 +66,15 @@ namespace Assets.Scripts.Networking
             foreach (var player in _players.Values)
             {
                 /* Send Positions To Everyone */
-                var pos = CreateMessage();
+                var movement = CreateMessage();
                 
-                pos.Write((byte)NetObject.Type.PlayerPositionUpdate, NetObject.IndentifierNumOfBits);
+                movement.Write((byte)NetObject.Type.PlayerMovementUpdate, NetObject.IndentifierNumOfBits);
 
-                pos.Write(player.NetId);
+                movement.Write(player.NetId);
 
-                pos = player.PackPosition(pos);
+                movement = player.PackMovementData(movement);
 
-                SendToAll(pos, null, NetDeliveryMethod.UnreliableSequenced, 3);
-
-                /* Send Physics To Everyone */
-                var phys = CreateMessage();
-
-                phys.Write((byte)NetObject.Type.PlayerPhysicsUpdate, NetObject.IndentifierNumOfBits);
-
-                phys.Write(player.NetId);
-
-                phys = player.PackPhysics(phys);
-
-                SendToAll(phys, null, NetDeliveryMethod.UnreliableSequenced, 4);
+                SendToAll(movement, null, NetDeliveryMethod.UnreliableSequenced, 3);
             }
         }
 
@@ -104,10 +93,6 @@ namespace Assets.Scripts.Networking
                 case NetObject.Type.PlayerJump:
                     break;
                 case NetObject.Type.PlayerDataPack:
-                    break;
-                case NetObject.Type.PlayerPositionUpdate:
-                    break;
-                case NetObject.Type.PlayerPhysicsUpdate:
                     break;
                 case NetObject.Type.PlayerMouseUpdate:
                     break;

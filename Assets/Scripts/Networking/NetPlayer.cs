@@ -6,15 +6,11 @@ namespace Assets.Scripts.Networking
     public class NetPlayer : NetObject
     {
         // event delegates
-        public delegate void TransformUpdateEvent(Vector2 netPosition, Quaternion netRotation);
-
-        public delegate void PhysicsUpdateEvent(Vector2 netVelocity, float netAngularVelocity);
+        public delegate void MovementDataEvent(Vector2 netPosition, Quaternion netRotation, Vector2 netVelocity, float netAngularVelocity);
 
         public delegate void MouseUpdateEvent(Vector2 globalMousePos);
 
-        public event TransformUpdateEvent OnTransformUpdate;
-
-        public event PhysicsUpdateEvent OnPhysicsUpdate;
+        public event MovementDataEvent OnMovementData;
 
         public event MouseUpdateEvent OnMouseUpdate;
 
@@ -53,40 +49,40 @@ namespace Assets.Scripts.Networking
             AttachedPlayer = attachedPlayer;
         }
 
-        public void UnpackPosition(NetIncomingMessage msg)
+        public NetOutgoingMessage PackMovementData(NetOutgoingMessage msg)
         {
-            NetData.NetPosition = msg.ReadVector2();
-            NetData.NetRotation = Quaternion.Euler(0, 0, msg.ReadFloat());
+            // write player position
+            msg.Write(AttachedPlayer.transform.position);
 
-            if (OnTransformUpdate != null)
-                OnTransformUpdate(NetData.NetPosition, NetData.NetRotation);
-        }
-
-        public NetOutgoingMessage PackPosition(NetOutgoingMessage msg)
-        {
-            msg.Write((Vector2)AttachedPlayer.transform.position);
+            // write player position
             msg.Write(AttachedPlayer.transform.rotation.eulerAngles.z);
 
-            return msg;
-        }
-
-        public void UnpackPhysics(NetIncomingMessage msg)
-        {
-            NetData.NetVelocity = msg.ReadVector2();
-            NetData.NetAngularVelocity = msg.ReadFloat();
-
-            if (OnPhysicsUpdate != null)
-                OnPhysicsUpdate(NetData.NetVelocity, NetData.NetAngularVelocity);
-        }
-
-        public NetOutgoingMessage PackPhysics(NetOutgoingMessage msg)
-        {
+            // get rigidbody
             var rigidBody = AttachedPlayer.GetComponentInChildren<Rigidbody2D>();
 
+            //write physics details
             msg.Write(rigidBody.velocity);
             msg.Write(rigidBody.angularVelocity);
 
             return msg;
+        }
+
+        public void UnpackMovementData(NetIncomingMessage msg)
+        {
+            // read position
+            NetData.NetPosition = msg.ReadVector2();
+
+            // read rotation
+            NetData.NetRotation = Quaternion.Euler(0, 0, msg.ReadFloat());
+
+            // read velocity
+            NetData.NetVelocity = msg.ReadVector2();
+
+            // read angular velocity
+            NetData.NetAngularVelocity = msg.ReadFloat();
+
+            if (OnMovementData != null)
+                OnMovementData(NetData.NetPosition, NetData.NetRotation, NetData.NetVelocity, NetData.NetAngularVelocity);
         }
 
         public void UnpackMouse(NetIncomingMessage msg)

@@ -560,9 +560,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PlayerPrefab: {fileID: 123776, guid: 7e091b2b18e19f447b2acd69c32f674b, type: 2}
   GameSceneName: Game
-  HostAdress: 127.0.0.1
+  HostAdress: localhost
   HostPort: 9888
-  SimulatedPing: 0.05
+  SimulatedPing: 0.001
   ServerUpdatesPerSecond: 20
   ServerTimeout: 5
 --- !u!224 &1012939872

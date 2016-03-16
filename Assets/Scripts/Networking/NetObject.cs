@@ -11,7 +11,7 @@ namespace Assets.Scripts.Networking
 
         public enum Type
         {
-            RegisterPlayer, PlayerJump, PlayerDataPack, PlayerPositionUpdate, PlayerPhysicsUpdate, PlayerMouseUpdate, PlayerControlsUpdate, PlayerShootBullet, MapData
+            RegisterPlayer, PlayerJump, PlayerDataPack, PlayerMovementUpdate, PlayerMouseUpdate, PlayerControlsUpdate, PlayerShootBullet, MapData
         }
 
         public NetObject()
