@@ -2,7 +2,7 @@ using Assets.Scripts.Networking;
 using Lidgren.Network;
 using UnityEngine;
 
-namespace Assets.Scripts
+namespace Assets.Scripts.Bullet_Weapon
 {
     public class BulletWeapon : MonoBehaviour
     {

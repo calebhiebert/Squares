@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Duality_;
+using Assets.Scripts.Bullet_Weapon;
+using Assets.Scripts.Small_Components;
 using Lidgren.Network;
 using UnityEngine;
 using UnityEngine.SceneManagement;

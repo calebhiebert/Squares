@@ -17,6 +17,7 @@ namespace Assets.Scripts
 
         public float HorizontalMoveForce;
         public float JumpForce;
+        public int CopycatFrameDelay;
 
         public LayerMask JumpMask;
         public ParticleSystem JumpSystem;
@@ -28,6 +29,8 @@ namespace Assets.Scripts
         private Controls _lastFrameControls = Controls.Poll();
 
         private int _jumpAllowance;
+
+        private GameObject _dummy;
 
         void Start ()
         {
@@ -50,6 +53,10 @@ namespace Assets.Scripts
                 Right = false,
                 WorldMouseCoord = Vector2.zero
             };
+
+            _dummy = new GameObject("Dummy");
+            _dummy.AddComponent<SpriteRenderer>().sprite = GetComponentInChildren<SpriteRenderer>().sprite;
+            _dummy.GetComponent<SpriteRenderer>().color = Color.gray;
         }
 
         private void NetMouseReceived(Vector2 globalMousePos)
@@ -74,7 +81,7 @@ namespace Assets.Scripts
             if (_collider.IsTouchingLayers(JumpMask))
                 _jumpAllowance = 1;
 
-            /*var he = new HistoryEntry
+            var he = new HistoryEntry
             {
                 pos = transform.position,
                 rot = transform.rotation,
@@ -82,7 +89,15 @@ namespace Assets.Scripts
                 angVel = _rigidbody.angularVelocity
             };
 
-            _historyQueue.Enqueue(he);*/
+            _historyQueue.Enqueue(he);
+
+            if (_historyQueue.Count > CopycatFrameDelay)
+            {
+                var dq = _historyQueue.Dequeue();
+
+                _dummy.transform.position = dq.pos;
+                _dummy.transform.rotation = dq.rot;
+            }
         }
 
         void FixedUpdate()

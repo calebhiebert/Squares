@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Assets
+namespace Assets.Scripts.Bullet_Weapon
 {
     public class Projectile : MonoBehaviour
     {
@@ -18,7 +18,7 @@ namespace Assets
 
         void OnCollisionEnter2D(Collision2D other)
         {
-            ImpactSystem.current.MakeImpact(ImpactSystem.current.explode, transform.position, 1);
+            ImpactSystem.Current.MakeImpact(ImpactSystem.Current.Explode, transform.position, 1);
 
             Trail.transform.SetParent(null);
             Destroy(Trail.gameObject, 2);

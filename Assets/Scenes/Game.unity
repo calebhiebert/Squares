@@ -185,8 +185,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c98bc0b681d50f9449d08271f6868251, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  explode: {fileID: 103046, guid: a269090c15fd0094583a4d60c8c9bbbd, type: 2}
-  hit: {fileID: 150332, guid: d0956c19b4684804183b6a8204139fde, type: 2}
+  Explode: {fileID: 103046, guid: a269090c15fd0094583a4d60c8c9bbbd, type: 2}
+  Hit: {fileID: 150332, guid: d0956c19b4684804183b6a8204139fde, type: 2}
 --- !u!4 &759936053
 Transform:
   m_ObjectHideFlags: 0
@@ -548,7 +548,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd12d64624f32ec44876fd16d0234e9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  target: {fileID: 0}
+  Target: {fileID: 0}
+  SmoothAmount: 12
 --- !u!1 &2145451038
 GameObject:
   m_ObjectHideFlags: 0

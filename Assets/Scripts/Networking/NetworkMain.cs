@@ -1,5 +1,4 @@
 using System.Collections;
-using Duality_;
 using Lidgren.Network;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -17,9 +16,9 @@ namespace Assets.Scripts.Networking
         public GameObject PlayerPrefab;
 
         public string GameSceneName = "Game";
-        public string HostAdress;
-        public int HostPort;
-        public float SimulatedPing;
+        public string HostAdress = "127.0.0.1";
+        public int HostPort = 9888;
+        public float SimulatedPing = 50;
 
         void Update()
         {

@@ -4,14 +4,14 @@ using System.Collections;
 public class ImpactSystem : MonoBehaviour
 {
 
-    public static ImpactSystem current;
+    public static ImpactSystem Current;
 
-    public GameObject explode;
-    public GameObject hit;
+    public GameObject Explode;
+    public GameObject Hit;
 
 	void Awake ()
 	{
-	    current = this;
+	    Current = this;
 	}
 
     public GameObject MakeImpact(GameObject impact, Vector2 position, float force)
@@ -20,7 +20,7 @@ public class ImpactSystem : MonoBehaviour
 
         //var particles = system.GetComponent<ParticleSystem>();
 
-        Destroy(system, 5.0f);
+        Destroy(system, 2f);
 
         return system;
     }

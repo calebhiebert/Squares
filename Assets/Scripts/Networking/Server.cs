@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
-using Assets.Scripts.Networking;
 using Lidgren.Network;
 using UnityEngine;
 
-namespace Duality_
+namespace Assets.Scripts.Networking
 {
     public class Server : NetServer
     {

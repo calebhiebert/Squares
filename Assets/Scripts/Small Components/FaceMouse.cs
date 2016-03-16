@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Assets.Scripts
+namespace Assets.Scripts.Small_Components
 {
     public class FaceMouse : MonoBehaviour
     {
