@@ -13,7 +13,7 @@ namespace Assets.Scripts
 
         void LateUpdate ()
         {
-            if (_player != null && _player.NetPlayer != null && !_player.NetPlayer.Local)
+            if (_player != null && !_player.NetPlayer.IsLocal)
             {
                 var diff = _player.WorldMousePos - (Vector2)transform.position;
                 diff.Normalize();

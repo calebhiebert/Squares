@@ -1,3 +1,4 @@
+using Assets.Scripts.Networking;
 using Lidgren.Network;
 using UnityEngine;
 
@@ -16,7 +17,7 @@ namespace Assets.Scripts
 
         void Start()
         {
-            _local = GetComponentInParent<PlayerController>().NetPlayer.Local;
+            _local = GetComponentInParent<PlayerController>().NetPlayer.IsLocal;
         }
 
         void Update()
@@ -49,13 +50,13 @@ namespace Assets.Scripts
 
         public void MakeBullet(Vector2 origin, Vector2 direction)
         {
-            var bulletEvent = NetworkingClient.Current.Client.CreateMessage();
+            var bulletEvent = Client.Current.CreateMessage();
 
-            bulletEvent.Write(PacketType.PlayerShootBullet);
+            bulletEvent.Write((byte) NetObject.Type.PlayerShootBullet, NetObject.IndentifierNumOfBits);
             bulletEvent.Write(origin);
             bulletEvent.Write(direction);
 
-            NetworkingClient.Current.Client.SendMessage(bulletEvent, NetDeliveryMethod.ReliableUnordered);
+            Client.Current.SendMessage(bulletEvent, NetDeliveryMethod.ReliableUnordered);
         }
     }
 }

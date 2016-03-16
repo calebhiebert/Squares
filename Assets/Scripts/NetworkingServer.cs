@@ -6,7 +6,7 @@ namespace Assets.Scripts
 {
     public class NetworkingServer : MonoBehaviour
     {
-        public static NetworkingServer Current;
+        /*public static NetworkingServer Current;
 
         public static bool IsServer;
 
@@ -19,71 +19,6 @@ namespace Assets.Scripts
         public Dictionary<NetConnection, NetworkPlayer> Players;
 
         private float _lastUpdate;
-
-        void Awake()
-        {
-            Current = this;
-        }
-
-        public void Host()
-        {
-            var config = new NetPeerConfiguration("SpaceGame");
-
-            config.Port = Port;
-
-
-            Server = new NetServer(config);
-
-            Players = new Dictionary<NetConnection, NetworkPlayer>();
-
-            Server.Start();
-
-            IsServer = true;
-        }
-
-        void Update()
-        {
-            if(Server == null || Server.Status != NetPeerStatus.Running)
-                return;
-
-            NetIncomingMessage msg;
-
-            while ((msg = Server.ReadMessage()) != null)
-            {
-                if (msg.MessageType == NetIncomingMessageType.StatusChanged)
-                    Debug.Log(Server.Status);
-
-                if (msg.MessageType == NetIncomingMessageType.DebugMessage)
-                    Debug.Log(msg.ReadString());
-
-                if (msg.MessageType == NetIncomingMessageType.Data)
-                {
-                    byte code = msg.ReadByte();
-
-                    if (code == PacketType.PlayerRegistration)
-                    {
-                        HandlePlayerRegistration(msg);
-                    }
-
-                    else if (code == PacketType.PlayerJump)
-                        HandleJump(msg);
-
-                    else if (code == PacketType.PlayerShootBullet)
-                        HandleBullet(msg);
-
-                    else if (code == PacketType.PlayerControlsUpdate)
-                        HandleControlsUpdate(msg);
-                }
-
-                Server.Recycle(msg);
-            }
-
-            if (Time.time > _lastUpdate + 1/UpdatesPerSecond)
-            {
-                UpdatePositions();
-                _lastUpdate = Time.time;
-            }
-        }
 
         void UpdatePositions()
         {
@@ -185,6 +120,6 @@ namespace Assets.Scripts
         NetworkPlayer GetPhysicalPlayer(NetConnection connection)
         {
             return NetworkingClient.Current.Players[Players[connection].PlayerId];
-        }
+        }*/
     }
 }

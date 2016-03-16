@@ -3,6 +3,7 @@ using System.Collections;
 using System.Linq.Expressions;
 using System.Security.AccessControl;
 using System.Collections.Generic;
+using Assets.Scripts.Networking;
 using Lidgren.Network;
 using UnityEngine;
 
@@ -23,7 +24,8 @@ namespace Assets.Scripts
 
         private Rigidbody2D _rigidbody;
         private BoxCollider2D _collider;
-        private readonly Queue<HistoryEntry> _historyQueue = new Queue<HistoryEntry>(); 
+        private Queue<HistoryEntry> _historyQueue = new Queue<HistoryEntry>();
+        private Controls _lastFrameControls = Controls.Poll();
 
         private int _jumpAllowance;
 
@@ -32,50 +34,45 @@ namespace Assets.Scripts
             _collider = GetComponent<BoxCollider2D>();
             _rigidbody = GetComponent<Rigidbody2D>();
 
-            if (NetPlayer != null)
-            {
-                NetPlayer.PlayerTransform = transform;
-                NameDisplay.text = NetPlayer.Name;
+            NameDisplay.text = NetPlayer.Name;
 
-                NetPlayer.OnNameChange += s => NameDisplay.text = s;
+            NetPlayer.OnTransformUpdate += NetPosReceived;
 
-                NetPlayer.OnTransformUpdate += OnTransformUpdate;
+            NetPlayer.OnPhysicsUpdate += NetPhysicsReceived;
 
-                NetPlayer.OnJump += Jump;
-
-                NetPlayer.OnControlsUpdate += controls => CurrentControls = controls;
-            }
+            NetPlayer.OnMouseUpdate += NetMouseReceived;
 
             ActivePlayers.Add(this);
+
+            CurrentControls = new Controls
+            {
+                Left = false,
+                Right = false,
+                WorldMouseCoord = Vector2.zero
+            };
         }
 
-        private void OnTransformUpdate(Vector2 pos, float rot, Vector2 vel, float angVel, Vector2 mouse)
+        private void NetMouseReceived(Vector2 globalMousePos)
         {
-            if(!NetworkingServer.IsServer)
-            {
-                TargetPosition = pos;
-                TargetRotation = transform.rotation = Quaternion.Euler(0, 0, rot);
-                TargetVelocity = vel;
-                TargetAngularVelocity = angVel;
-            }
+            WorldMousePos = globalMousePos;
+        }
 
-            WorldMousePos = mouse;
+        private void NetPhysicsReceived(Vector2 netVelocity, float netAngularVelocity)
+        {
+            TargetVelocity = netVelocity;
+            TargetAngularVelocity = netAngularVelocity;
+        }
+
+        private void NetPosReceived(Vector2 netPosition, Quaternion netRotation)
+        {
+            TargetPosition = netPosition;
+            TargetRotation = netRotation;
         }
 
         void Update()
         {
             if (_collider.IsTouchingLayers(JumpMask))
                 _jumpAllowance = 1;
-
-            if (NetPlayer != null && NetPlayer.Local)
-            {
-                if (Input.GetKeyDown(KeyCode.Space))
-                {
-                    var jumpMsg = NetworkingClient.Current.Client.CreateMessage();
-                    jumpMsg.Write(PacketType.PlayerJump);
-                    NetworkingClient.Current.Client.SendMessage(jumpMsg, NetDeliveryMethod.Unreliable);
-                }
-            }
 
             /*var he = new HistoryEntry
             {
@@ -90,7 +87,7 @@ namespace Assets.Scripts
 
         void FixedUpdate()
         {
-            if (!NetworkingServer.IsServer)
+            if (!NetworkMain.IsServer)
             {
                 transform.position = Vector2.Lerp(transform.position, TargetPosition, Time.deltaTime * SmoothingAmount);
                 transform.rotation = Quaternion.Lerp(transform.rotation, TargetRotation, Time.deltaTime*SmoothingAmount * 2);
@@ -98,6 +95,22 @@ namespace Assets.Scripts
                 _rigidbody.velocity = Vector2.Lerp(_rigidbody.velocity, TargetVelocity, Time.deltaTime*SmoothingAmount);
                 _rigidbody.angularVelocity = Mathf.Lerp(_rigidbody.angularVelocity, TargetAngularVelocity,
                     Time.deltaTime*SmoothingAmount * 2);
+            }
+
+            if (NetPlayer.IsLocal)
+            {
+                CurrentControls = Controls.Poll();
+
+                if (_lastFrameControls.Right != CurrentControls.Right || _lastFrameControls.Left != CurrentControls.Left)
+                {
+                    var controls = NetPlayer.CreateMessage(NetObject.Type.PlayerControlsUpdate);
+
+                    controls = NetPlayer.PackControls(controls);
+
+                    Client.Current.SendMessage(controls, NetDeliveryMethod.ReliableSequenced, 1);
+
+                    _lastFrameControls = CurrentControls;
+                }
             }
 
             if (CurrentControls != null)
@@ -132,13 +145,16 @@ namespace Assets.Scripts
             public float angVel;
         }
 
-        public NetworkPlayer NetPlayer { get; set; }
+        public NetPlayer NetPlayer { get; set; }
 
         public Controls CurrentControls { get; set; }
 
         public Vector2 TargetPosition { get; set; }
+
         public Vector2 TargetVelocity { get; set; }
+
         public Quaternion TargetRotation { get; set; }
+
         public float TargetAngularVelocity { get; set; }
 
         public Vector2 WorldMousePos { get; set; }
