@@ -10,24 +10,13 @@ namespace Assets.Scripts
 
         public static Controls Poll()
         {
-            Controls c = new Controls
-            {
-                Left = Input.GetKey(KeyCode.A),
-                Right = Input.GetKey(KeyCode.D)
-            };
+            return new Controls();
+        }
 
-
-            if (Camera.main != null)
-            {
-                c.WorldMouseCoord = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            }
-            else
-            {
-                c.WorldMouseCoord = Vector2.up;
-            }
-
-
-            return c;
+        public Controls()
+        {
+            Left = Input.GetKey(KeyCode.A);
+            Right = Input.GetKey(KeyCode.D);
         }
 
         public override string ToString()

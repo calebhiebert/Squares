@@ -22,15 +22,21 @@ namespace Assets.Scripts
 
         public static void AddExplosionForce(this Rigidbody2D body, float expForce, Vector3 expPosition, float expRadius)
         {
-            var dir = (body.transform.position - expPosition);
+            if (body == null)
+                Debug.Log("Body Was Null");
 
-            var calc = 1 - (dir.magnitude/expRadius);
-            if (calc <= 0)
+            if (body != null)
             {
-                calc = 0;
-            }
+                var dir = body.transform.position - expPosition;
 
-            body.AddForce(dir.normalized*expForce*calc);
+                var calc = 1 - (dir.magnitude/expRadius);
+                if (calc <= 0)
+                {
+                    calc = 0;
+                }
+
+                body.AddForce(dir.normalized*expForce*calc);
+            }
         }
     }
 }

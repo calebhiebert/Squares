@@ -27,20 +27,20 @@ namespace Assets.Scripts.Networking
         public int HostPort = 9888;
         public float SimulatedPing = 50;
         public float ServerUpdatesPerSecond = 25;
-        public float ServerTimeout = 5;
+        public float Timeout = 5;
+        
 
         public string PlayerName;
         public Color PlayerColor;
+        public float ColorLightnessFactor = 0.1f;
+
+        private bool _isLoading;
 
         void Update()
         {
             if (Input.GetKeyDown(KeyCode.Escape))
             {
-                KillNetwork();
-
-                Destroy(gameObject);
-
-                SceneManager.LoadScene("Menu");
+                ToMenu();
             }
 
             if(Client.Current != null)
@@ -48,6 +48,15 @@ namespace Assets.Scripts.Networking
 
             if(Server.Current != null)
                 Server.Current.Update();
+        }
+
+        public void ToMenu()
+        {
+            KillNetwork();
+
+            Destroy(gameObject);
+
+            SceneManager.LoadScene("Menu");
         }
 
         void OnGUI()
@@ -109,8 +118,7 @@ namespace Assets.Scripts.Networking
             {
                 var conf = new NetPeerConfiguration(ApplicationIdentification);
 
-                /*if (SimulatedPing > 0)
-                    conf.SimulatedMinimumLatency = SimulatedPing / 2000.0f;*/
+                conf.ConnectionTimeout = Timeout;
 
                 Client.Current = new Client(conf);
             }
@@ -131,8 +139,7 @@ namespace Assets.Scripts.Networking
             {
                 var conf = new NetPeerConfiguration(ApplicationIdentification);
 
-                /*if (SimulatedPing > 0)
-                    conf.SimulatedMinimumLatency = SimulatedPing / 2000.0f;*/
+                conf.ConnectionTimeout = Timeout;
 
                 Client.Current = new Client(conf);
             }
@@ -146,11 +153,8 @@ namespace Assets.Scripts.Networking
             {
                 var conf = new NetPeerConfiguration(ApplicationIdentification);
 
-                conf.ConnectionTimeout = 5.0f;
+                conf.ConnectionTimeout = Timeout;
                 conf.Port = HostPort;
-
-                /*if (SimulatedPing > 0)
-                    conf.SimulatedMinimumLatency = SimulatedPing / 2000.0f;*/
 
                 Server.Current = new Server(conf, Client.Current);
             }
@@ -178,19 +182,33 @@ namespace Assets.Scripts.Networking
                 spr.color = color;
             }
 
+            Debug.Log("Spawned New Player");
+
             return controller;
         }
 
         public void LoadMap(string mapName)
         {
-            if(mapName == SceneManager.GetActiveScene().name)
+            if(mapName == SceneManager.GetActiveScene().name || _isLoading)
                 return;
 
             StartCoroutine(LoadScene(mapName));
         }
 
+        void OnLevelWasLoaded(int lvl)
+        {
+            Debug.Log("Level " + lvl + " was loaded.");
+
+            if (lvl == 1)
+            {
+                Client.Current.Register(Current.PlayerName, Current.PlayerColor);
+            }
+        }
+
         private IEnumerator LoadScene(string mapName)
         {
+            _isLoading = true;
+
             var operation = SceneManager.LoadSceneAsync(mapName);
 
             while (!operation.isDone)

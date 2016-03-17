@@ -8,19 +8,23 @@ public class ImpactSystem : MonoBehaviour
 
     public GameObject Explode;
     public GameObject Hit;
+    public GameObject Disconnect;
 
 	void Awake ()
 	{
 	    Current = this;
 	}
 
-    public GameObject MakeImpact(GameObject impact, Vector2 position, float force)
+    public GameObject MakeImpact(GameObject impact, Vector2 position, float force, Color color)
     {
-        var system = Instantiate(impact, position, Quaternion.identity) as GameObject;
+        var system = (GameObject) Instantiate(impact, position, Quaternion.identity);
 
-        //var particles = system.GetComponent<ParticleSystem>();
+        var particles = system.GetComponentInChildren<ParticleSystem>();
 
-        Destroy(system, 2f);
+        //set color
+        particles.startColor = color;
+
+        Destroy(system, 3f);
 
         return system;
     }

@@ -1152,9 +1152,10 @@ MonoBehaviour:
   HostPort: 9888
   SimulatedPing: 1
   ServerUpdatesPerSecond: 20
-  ServerTimeout: 5
+  Timeout: 5
   PlayerName: 
   PlayerColor: {r: 1, g: 1, b: 1, a: 1}
+  ColorLightnessFactor: 0.2
 --- !u!224 &1012939872
 RectTransform:
   m_ObjectHideFlags: 0

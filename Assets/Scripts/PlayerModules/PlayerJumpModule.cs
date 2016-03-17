@@ -20,6 +20,8 @@ namespace Assets.Scripts.PlayerModules
             base.Start();
 
             _rigidbody = GetComponent<Rigidbody2D>();
+
+            JumpSystem.startColor = Owner.LighterColor;
         }
 
         public override void OnOwnerUpdate()

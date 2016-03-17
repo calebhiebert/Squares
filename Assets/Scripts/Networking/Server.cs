@@ -42,7 +42,12 @@ namespace Assets.Scripts.Networking
                         break;
 
                     case NetIncomingMessageType.StatusChanged:
-                        Debug.Log(string.Format("[S][STATUS][{1}] {0}", Status, _incoming.SenderConnection));
+                        var status = (NetConnectionStatus)_incoming.ReadByte();
+                        Debug.Log("[S][STATUS][ " + _incoming.SenderConnection + "] " + status);
+
+                        if (status == NetConnectionStatus.Disconnected)
+                            HandleClientDisconnect(_players[_incoming.SenderConnection], _incoming.SenderConnection);
+
                         break;
 
                     case NetIncomingMessageType.WarningMessage:
@@ -60,6 +65,17 @@ namespace Assets.Scripts.Networking
                 SendUpdates();
                 _lastUpdateTime = Time.time;
             }
+        }
+
+        private void HandleClientDisconnect(NetPlayer netPlayer, NetConnection nc)
+        {
+            var disconnect = CreateMessage(NetObject.Type.PlayerDisconnect);
+
+            disconnect.Write(netPlayer.NetId);
+
+            SendToAll(disconnect, NetDeliveryMethod.ReliableOrdered);
+
+            _players.Remove(nc);
         }
 
         private void SendUpdates()
@@ -104,9 +120,31 @@ namespace Assets.Scripts.Networking
                 case NetObject.Type.MapData:
                     HandleMapRequest(msg);
                     break;
+                case NetObject.Type.PlayerGroundPound:
+                    HandleGroundPound(msg);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
 
             Recycle(_incoming);
+        }
+
+        private void HandleGroundPound(NetIncomingMessage msg)
+        {
+            var player = GetClientPlayer(msg.SenderConnection);
+            var module = player.AttachedPlayer.GetComponentInChildren<PlayerGroundPoundModule>();
+
+            if (module.CanPound)
+            {
+                module.DoPound();
+
+                var poundMsg = CreateMessage(NetObject.Type.PlayerGroundPound);
+
+                poundMsg.Write(player.NetId);
+
+                SendToAll(poundMsg, NetDeliveryMethod.ReliableUnordered);
+            }
         }
 
         private void HandleBullet(NetIncomingMessage msg)
@@ -168,7 +206,7 @@ namespace Assets.Scripts.Networking
         {
             var connection = msg.SenderConnection;
 
-            if(_players.ContainsKey(connection))
+            if (_players.ContainsKey(connection))
                 return;
 
             var name = msg.ReadString();

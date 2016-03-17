@@ -426,7 +426,7 @@ Rigidbody2D:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 123776}
   m_UseAutoMass: 0
-  m_Mass: 1
+  m_Mass: 2
   m_LinearDrag: 0.1
   m_AngularDrag: 0.05
   m_GravityScale: 2.5
@@ -506,7 +506,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7206f64102326aa48b0c4d841f3e526a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  HorizontalMoveForce: 35
+  HorizontalMoveForce: 90
   CopycatFrameDelay: 5
   NameDisplay: {fileID: 10253426}
 --- !u!114 &11425230
@@ -531,7 +531,9 @@ MonoBehaviour:
   FinisherSystems:
   - {fileID: 19861968}
   - {fileID: 19891330}
-  PoundForce: 250
+  PoundForceRadius: 10
+  PoundImpactForce: 2500
+  PoundForce: 800
   _pounding: 0
 --- !u!114 &11425580
 MonoBehaviour:
@@ -578,7 +580,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   NumberOfJumps: 1
-  JumpForce: 650
+  JumpForce: 1600
   JumpSystem: {fileID: 19835124}
 --- !u!114 &11462124
 MonoBehaviour:

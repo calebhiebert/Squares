@@ -19,7 +19,6 @@ namespace Assets.Scripts
         public TextMesh NameDisplay;
 
         private Rigidbody2D _rigidbody;
-        private BoxCollider2D _collider;
         private Queue<HistoryEntry> _historyQueue = new Queue<HistoryEntry>();
         private Controls _lastFrameControls = Controls.Poll();
 
@@ -27,7 +26,6 @@ namespace Assets.Scripts
 
         private void Start ()
         {
-            _collider = GetComponent<BoxCollider2D>();
             _rigidbody = GetComponent<Rigidbody2D>();
 
             NameDisplay.text = NetPlayer.Name;
@@ -72,8 +70,24 @@ namespace Assets.Scripts
                 }
             }
 
+            if (NetworkMain.IsServer)
+            {
+                if (transform.position.y <= -13)
+                {
+                    Kill();
+                }
+            }
+
             if (CurrentControls != null)
                 Move(CurrentControls);
+        }
+
+        private void Kill()
+        {
+            transform.position = Vector3.zero;
+            transform.rotation = Quaternion.identity;
+            _rigidbody.velocity = Vector2.zero;
+            _rigidbody.angularVelocity = 0;
         }
 
         void Move(Controls controls)
@@ -93,6 +107,16 @@ namespace Assets.Scripts
             public Quaternion rot;
             public Vector2 vel;
             public float angVel;
+        }
+
+        public void Remove()
+        {
+            ImpactSystem.Current.MakeImpact(ImpactSystem.Current.Disconnect, transform.position, 0,
+                NetPlayer.LighterColor);
+
+            Destroy(_dummy.gameObject);
+
+            Destroy(gameObject);
         }
 
         public NetPlayer NetPlayer { get; set; }

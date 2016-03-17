@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Assets.Scripts.Bullet_Weapon;
 using Assets.Scripts.Networking;
 using Lidgren.Network;
 using UnityEngine;
@@ -28,6 +29,10 @@ namespace Assets.Scripts.PlayerModules
         {
             var bullet = (GameObject) Instantiate(BulletPrefab, origin, direction.Vector2Quaternion());
             Physics2D.IgnoreCollision(bullet.GetComponent<BoxCollider2D>(), GetComponentInParent<BoxCollider2D>());
+
+            bullet.GetComponentInChildren<SpriteRenderer>().color = Owner.LighterColor;
+            bullet.GetComponentInChildren<ParticleSystem>().startColor = Owner.LighterColor;
+            bullet.GetComponent<Projectile>().Owner = Owner;
 
             _lastShot = Time.time;
         }

@@ -12,12 +12,15 @@ namespace Assets.Scripts.PlayerModules
     public class PlayerGroundPoundModule : PlayerModule
     {
         private Rigidbody2D _rigidbody;
+        private BoxCollider2D _collider;
 
         public CircleCollider2D PoundCollider;
         public LayerMask PoundMask;
         public ParticleSystem[] ParticleSystems;
         public ParticleSystem[] FinisherSystems;
 
+        public float PoundForceRadius;
+        public float PoundImpactForce;
         public float PoundForce;
 
         [SerializeField]
@@ -27,6 +30,17 @@ namespace Assets.Scripts.PlayerModules
         {
             base.Start();
             _rigidbody = GetComponentInParent<Rigidbody2D>();
+            _collider = GetComponentInParent<BoxCollider2D>();
+
+            foreach (var sys in FinisherSystems)
+            {
+                sys.startColor = Owner.LighterColor;
+            }
+
+            foreach (var sys in ParticleSystems)
+            {
+                sys.startColor = Owner.LighterColor;
+            }
         }
 
         public override void OnOwnerUpdate()
@@ -44,7 +58,7 @@ namespace Assets.Scripts.PlayerModules
                 _rigidbody.AddForce(new Vector2(0, -PoundForce));
             }
 
-            if (_pounding && GetComponentInParent<BoxCollider2D>().IsTouchingLayers(PoundMask))
+            if (_pounding && _collider.IsTouchingLayers(PoundMask))
             {
                 EndPound();
             }
@@ -63,6 +77,14 @@ namespace Assets.Scripts.PlayerModules
             {
                 system.Play();
             }
+
+            foreach (var d in Physics2D.OverlapCircleAll(transform.position, PoundForceRadius))
+            {
+                if (d.attachedRigidbody != null && d.attachedRigidbody != _rigidbody)
+                {
+                    d.attachedRigidbody.AddExplosionForce(PoundImpactForce, transform.position, PoundForceRadius);
+                }
+            }
         }
 
         public void DoPound()
@@ -77,7 +99,7 @@ namespace Assets.Scripts.PlayerModules
 
         private void SendPoundCommand()
         {
-            DoPound();
+            //DoPound();
 
             Client.Current.SendMessage(Client.Current.CreateMessage(NetObject.Type.PlayerGroundPound), NetDeliveryMethod.Unreliable);
         }

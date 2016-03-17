@@ -41,9 +41,14 @@ namespace Assets.Scripts.Networking
                         break;
 
                         case NetIncomingMessageType.StatusChanged:
-                            Debug.Log("[C][STATUS] " + Status);
-                        if(ServerConnection != null)
+                        var status = (NetConnectionStatus)_incoming.ReadByte();
+
+                        Debug.Log("[C][STATUS][ " + _incoming.SenderConnection + "] " + status);
+
+                        if (ServerConnection != null && status == NetConnectionStatus.Connected)
                             SendMapRequest();
+                        if (status == NetConnectionStatus.Disconnected)
+                            OnServerDisconnect();
                         break;
 
                         case NetIncomingMessageType.WarningMessage:
@@ -57,12 +62,17 @@ namespace Assets.Scripts.Networking
             }
         }
 
+        private void OnServerDisconnect()
+        {
+            NetworkMain.Current.ToMenu();
+        }
+
         public Dictionary<byte, NetPlayer> Players
         {
             get { return _players; }
         }
 
-        private void Register(string playerName, Color color)
+        public void Register(string playerName, Color color)
         {
             var msg = CreateMessage(NetObject.Type.RegisterPlayer);
 
@@ -111,9 +121,36 @@ namespace Assets.Scripts.Networking
                 case NetObject.Type.PlayerMovementUpdate:
                     HandleMovementUpdate(msg);
                     break;
+                case NetObject.Type.PlayerGroundPound:
+                    HandleGroundPound(msg);
+                    break;
+                case NetObject.Type.PlayerDisconnect:
+                    HandleDisconnect(msg);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        private void HandleDisconnect(NetIncomingMessage msg)
+        {
+            var id = msg.ReadByte();
+
+            var player = _players[id];
+
+            player.AttachedPlayer.Remove();
+
+            _players.Remove(id);
+        }
+
+        private void HandleGroundPound(NetIncomingMessage msg)
+        {
+            var id = msg.ReadByte();
+
+            Debug.Log("Ground pound for " + id);
+
+            if(_players.ContainsKey(id))
+                _players[id].AttachedPlayer.GetComponentInChildren<PlayerGroundPoundModule>().DoPound();
         }
 
         private void HandleJump(NetIncomingMessage msg)
@@ -214,7 +251,7 @@ namespace Assets.Scripts.Networking
 
         private void OnSceneLoad(string sceneName)
         {
-            Register(NetworkMain.Current.PlayerName, NetworkMain.Current.PlayerColor);
+
         }
 
         public NetOutgoingMessage CreateMessage(NetObject.Type type)

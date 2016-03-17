@@ -1,3 +1,4 @@
+using Assets.Scripts.Networking;
 using UnityEngine;
 
 namespace Assets.Scripts.Bullet_Weapon
@@ -7,6 +8,8 @@ namespace Assets.Scripts.Bullet_Weapon
         public float Force;
         public float ExplosionForce;
         public float ExplosionRadius;
+
+        public NetPlayer Owner;
 
         public ParticleSystem Trail;
 
@@ -18,7 +21,7 @@ namespace Assets.Scripts.Bullet_Weapon
 
         void OnCollisionEnter2D(Collision2D other)
         {
-            ImpactSystem.Current.MakeImpact(ImpactSystem.Current.Explode, transform.position, 1);
+            ImpactSystem.Current.MakeImpact(ImpactSystem.Current.Explode, transform.position, 1, Owner.LighterColor);
 
             Trail.transform.SetParent(null);
             Destroy(Trail.gameObject, 2);

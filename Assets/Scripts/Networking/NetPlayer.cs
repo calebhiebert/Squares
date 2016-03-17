@@ -26,7 +26,11 @@ namespace Assets.Scripts.Networking
         // the name of this player
         public string Name;
 
+        // the color of this player
         public Color Color;
+
+        // remaining lives
+        public int Lives;
 
         // do we have control of this netplayer
         public bool IsLocal;
@@ -125,6 +129,18 @@ namespace Assets.Scripts.Networking
         {
             AttachedPlayer.CurrentControls.Left = msg.ReadBoolean();
             AttachedPlayer.CurrentControls.Right = msg.ReadBoolean();
+        }
+
+        public Color LighterColor
+        {
+            get
+            {
+                return new Color(
+                    Color.r + NetworkMain.Current.ColorLightnessFactor, 
+                    Color.g + NetworkMain.Current.ColorLightnessFactor, 
+                    Color.b + NetworkMain.Current.ColorLightnessFactor
+                    );
+            }
         }
     }
 }
