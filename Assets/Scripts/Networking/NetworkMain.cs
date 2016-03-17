@@ -34,6 +34,8 @@ namespace Assets.Scripts.Networking
         public Color PlayerColor;
         public float ColorLightnessFactor = 0.1f;
 
+        private float GameTimeScale = 1;
+
         private bool _isLoading;
 
         void Update()
@@ -249,5 +251,17 @@ namespace Assets.Scripts.Networking
 
         public string SetName { set { PlayerName = value; } }
         public string SetHostAdress { set { HostAdress = value; } }
+
+        public void ChangeTimeScale(float scale, float duration)
+        {
+            Time.timeScale = scale;
+
+            Invoke("ResetTimeScale", duration);
+        }
+
+        void ResetTimeScale()
+        {
+            Time.timeScale = 1;
+        }
     }
 }

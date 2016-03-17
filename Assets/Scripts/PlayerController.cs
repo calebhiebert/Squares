@@ -20,7 +20,7 @@ namespace Assets.Scripts
 
         private Rigidbody2D _rigidbody;
         private Queue<HistoryEntry> _historyQueue = new Queue<HistoryEntry>();
-        private Controls _lastFrameControls = Controls.Poll();
+        private Controls _lastFrameControls = new Controls().Poll();
 
         private GameObject _dummy;
 
@@ -61,7 +61,7 @@ namespace Assets.Scripts
         {
             if (NetPlayer.IsLocal)
             {
-                CurrentControls = Controls.Poll();
+                CurrentControls = CurrentControls.Poll();
 
                 if (_lastFrameControls.Right != CurrentControls.Right || _lastFrameControls.Left != CurrentControls.Left)
                 {

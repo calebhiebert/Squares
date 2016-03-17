@@ -127,6 +127,9 @@ namespace Assets.Scripts.Networking
                 case NetObject.Type.PlayerDisconnect:
                     HandleDisconnect(msg);
                     break;
+                case NetObject.Type.GameTimeScale:
+                    NetworkMain.Current.ChangeTimeScale(msg.ReadFloat(), msg.ReadFloat());
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -241,17 +244,10 @@ namespace Assets.Scripts.Networking
         {
             var data = msg.ReadString();
 
-            if(SceneManager.GetActiveScene().name == data)
+            if (SceneManager.GetActiveScene().name == data)
                 return;
 
-            NetworkMain.OnSceneLoadComplete += OnSceneLoad;
-
             NetworkMain.Current.LoadMap(data);
-        }
-
-        private void OnSceneLoad(string sceneName)
-        {
-
         }
 
         public NetOutgoingMessage CreateMessage(NetObject.Type type)

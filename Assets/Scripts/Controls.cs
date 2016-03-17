@@ -8,15 +8,11 @@ namespace Assets.Scripts
         public bool Left, Right;
         public Vector2 WorldMouseCoord;
 
-        public static Controls Poll()
-        {
-            return new Controls();
-        }
-
-        public Controls()
+        public Controls Poll()
         {
             Left = Input.GetKey(KeyCode.A);
             Right = Input.GetKey(KeyCode.D);
+            return this;
         }
 
         public override string ToString()

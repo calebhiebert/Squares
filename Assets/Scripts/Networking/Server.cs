@@ -167,6 +167,8 @@ namespace Assets.Scripts.Networking
                 bulletMsg.Write(direction);
 
                 SendToAll(bulletMsg, NetDeliveryMethod.ReliableUnordered);
+
+                ChangeTimeScale(0.5f, 1.0f);
             }
         }
 
@@ -276,6 +278,17 @@ namespace Assets.Scripts.Networking
             msg.Write((byte) type, NetObject.IndentifierNumOfBits);
 
             return msg;
+        }
+
+        public void ChangeTimeScale(float newTimeScale, float forTime)
+        {
+            var ts = CreateMessage(NetObject.Type.GameTimeScale);
+
+            ts.Write(newTimeScale);
+
+            ts.Write(forTime);
+
+            SendToAll(ts, NetDeliveryMethod.ReliableUnordered);
         }
     }
 }
