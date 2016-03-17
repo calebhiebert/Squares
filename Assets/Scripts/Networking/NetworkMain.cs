@@ -183,6 +183,9 @@ namespace Assets.Scripts.Networking
 
         public void LoadMap(string mapName)
         {
+            if(mapName == SceneManager.GetActiveScene().name)
+                return;
+
             StartCoroutine(LoadScene(mapName));
         }
 

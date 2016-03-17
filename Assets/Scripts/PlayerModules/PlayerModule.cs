@@ -16,15 +16,15 @@ namespace Assets.Scripts.PlayerModules
             Owner = GetComponentInParent<PlayerController>().NetPlayer;
         }
 
-        void Update()
+        public virtual void Update()
         {
             if(Owner.IsLocal)
                 OnOwnerUpdate();
-            else if(NetworkMain.IsServer)
+
+            if (NetworkMain.IsServer)
                 OnServerUpdate();
-            else
-                OnEveryoneUpdate();
-                
+            
+            OnEveryoneUpdate();
         }
 
         // called only if this player is local

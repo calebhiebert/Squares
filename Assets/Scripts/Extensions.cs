@@ -19,5 +19,18 @@ namespace Assets.Scripts
         {
             return Quaternion.Euler(0, 0, Mathf.Atan2(vector.y, vector.x)*Mathf.Rad2Deg - 90);
         }
+
+        public static void AddExplosionForce(this Rigidbody2D body, float expForce, Vector3 expPosition, float expRadius)
+        {
+            var dir = (body.transform.position - expPosition);
+
+            var calc = 1 - (dir.magnitude/expRadius);
+            if (calc <= 0)
+            {
+                calc = 0;
+            }
+
+            body.AddForce(dir.normalized*expForce*calc);
+        }
     }
 }

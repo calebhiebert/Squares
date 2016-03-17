@@ -104,8 +104,6 @@ namespace Assets.Scripts.Networking
                 case NetObject.Type.MapData:
                     HandleMapRequest(msg);
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException();
             }
 
             Recycle(_incoming);

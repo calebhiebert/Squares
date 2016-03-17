@@ -36,6 +36,7 @@ namespace Assets.Scripts
                 var c = new ConfigData();
 
                 c.name = reader.ReadLine();
+
                 c.color = new Color(
                     float.Parse(reader.ReadLine()),
                     float.Parse(reader.ReadLine()),

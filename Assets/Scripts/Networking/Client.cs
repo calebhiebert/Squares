@@ -75,6 +75,9 @@ namespace Assets.Scripts.Networking
 
         private void SendMapRequest()
         {
+            if(SceneManager.GetActiveScene().name != "Menu")
+                return;
+
             var mr = CreateMessage();
             mr.Write((byte) NetObject.Type.MapData, NetObject.IndentifierNumOfBits);
             SendMessage(mr, NetDeliveryMethod.ReliableOrdered);
@@ -212,8 +215,6 @@ namespace Assets.Scripts.Networking
         private void OnSceneLoad(string sceneName)
         {
             Register(NetworkMain.Current.PlayerName, NetworkMain.Current.PlayerColor);
-
-            NetworkMain.OnSceneLoadComplete -= OnSceneLoad;
         }
 
         public NetOutgoingMessage CreateMessage(NetObject.Type type)
