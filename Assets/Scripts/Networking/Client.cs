@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Assets.Scripts.Bullet_Weapon;
+using Assets.Scripts.PlayerModules;
 using Assets.Scripts.Small_Components;
 using Lidgren.Network;
 using UnityEngine;
@@ -61,13 +62,13 @@ namespace Assets.Scripts.Networking
             get { return _players; }
         }
 
-        private void Register(string playerName)
+        private void Register(string playerName, Color color)
         {
-            var msg = CreateMessage();
-
-            msg.Write((byte) NetObject.Type.RegisterPlayer, NetObject.IndentifierNumOfBits);
+            var msg = CreateMessage(NetObject.Type.RegisterPlayer);
 
             msg.Write(playerName);
+
+            msg.Write(new Vector3(color.r, color.g, color.b));
 
             SendMessage(msg, NetDeliveryMethod.ReliableOrdered);
         }
@@ -89,6 +90,7 @@ namespace Assets.Scripts.Networking
                     HandleRegistrationResponse(msg);        
                     break;
                 case NetObject.Type.PlayerJump:
+                    HandleJump(msg);
                     break;
                 case NetObject.Type.PlayerDataPack:
                     HandlePlayerData(msg);
@@ -111,6 +113,17 @@ namespace Assets.Scripts.Networking
             }
         }
 
+        private void HandleJump(NetIncomingMessage msg)
+        {
+            if(NetworkMain.IsServer)
+                return;
+
+            var id = msg.ReadByte();
+
+            if(_players.ContainsKey(id))
+                _players[id].AttachedPlayer.GetComponent<PlayerJumpModule>().DoJump();
+        }
+
         private void HandleMovementUpdate(NetIncomingMessage msg)
         {
             if(NetworkMain.IsServer)
@@ -127,6 +140,7 @@ namespace Assets.Scripts.Networking
             var id = msg.ReadByte();
             var pos = msg.ReadVector2();
             var name = msg.ReadString();
+            var color = msg.ReadVector3();
 
             Debug.Log(string.Format("id: {0} pos: {1} name: {2}", id, pos, name));
 
@@ -137,12 +151,14 @@ namespace Assets.Scripts.Networking
                 _localPlayer = _players[id];
 
                 _localPlayer.IsLocal = true;
+
+                Camera.main.GetComponent<CameraController>().Target = _localPlayer.AttachedPlayer.transform;
             }
             else
             {
                 Debug.Log("I am client");
 
-                var controller = NetworkMain.Current.SpawnPlayer(id, pos, name);
+                var controller = NetworkMain.Current.SpawnPlayer(id, pos, name, new Color(color.x, color.y, color.z));
 
                 controller.NetPlayer.IsLocal = true;
 
@@ -150,8 +166,7 @@ namespace Assets.Scripts.Networking
 
                 _localPlayer = controller.NetPlayer;
 
-                if (Camera.main != null)
-                    Camera.main.GetComponent<CameraController>().Target = controller.transform;
+                Camera.main.GetComponent<CameraController>().Target = controller.transform;
             }
         }
 
@@ -163,19 +178,23 @@ namespace Assets.Scripts.Networking
             var id = msg.ReadByte();
             var pos = msg.ReadVector2();
             var name = msg.ReadString();
+            var color = msg.ReadVector3();
 
-            var controller = NetworkMain.Current.SpawnPlayer(id, pos, name);
+            var controller = NetworkMain.Current.SpawnPlayer(id, pos, name, new Color(color.x, color.y, color.z));
 
             _players.Add(id, controller.NetPlayer);
         }
 
         private void HandleBullet(NetIncomingMessage msg)
         {
+            if(NetworkMain.IsServer)
+                return;
+
             var id = msg.ReadByte();
             var origin = msg.ReadVector2();
             var direction = msg.ReadVector2();
 
-            _players[id].AttachedPlayer.GetComponentInChildren<BulletWeapon>().SpawnBullet(origin, direction);
+            _players[id].AttachedPlayer.GetComponentInChildren<PlayerBulletModule>().CreateBullet(origin, direction);
         }
 
         private void HandleMapData(NetIncomingMessage msg)
@@ -192,9 +211,17 @@ namespace Assets.Scripts.Networking
 
         private void OnSceneLoad(string sceneName)
         {
-            Register("Robby");
+            Register(NetworkMain.Current.PlayerName, NetworkMain.Current.PlayerColor);
 
             NetworkMain.OnSceneLoadComplete -= OnSceneLoad;
+        }
+
+        public NetOutgoingMessage CreateMessage(NetObject.Type type)
+        {
+            var msg = CreateMessage();
+            msg.Write((byte) type, NetObject.IndentifierNumOfBits);
+
+            return msg;
         }
     }
 }

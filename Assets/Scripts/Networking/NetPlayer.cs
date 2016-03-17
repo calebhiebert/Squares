@@ -26,6 +26,8 @@ namespace Assets.Scripts.Networking
         // the name of this player
         public string Name;
 
+        public Color Color;
+
         // do we have control of this netplayer
         public bool IsLocal;
 
@@ -52,16 +54,20 @@ namespace Assets.Scripts.Networking
         public NetOutgoingMessage PackMovementData(NetOutgoingMessage msg)
         {
             // write player position
-            msg.Write(AttachedPlayer.transform.position);
+            msg.Write((Vector2)AttachedPlayer.transform.position);
 
-            // write player position
-            msg.Write(AttachedPlayer.transform.rotation.eulerAngles.z);
+            float rot = AttachedPlayer.transform.rotation.eulerAngles.z;
 
+            msg.Write(rot);
+
+            // write player rotation
+            
             // get rigidbody
             var rigidBody = AttachedPlayer.GetComponentInChildren<Rigidbody2D>();
 
             //write physics details
             msg.Write(rigidBody.velocity);
+
             msg.Write(rigidBody.angularVelocity);
 
             return msg;
@@ -69,17 +75,18 @@ namespace Assets.Scripts.Networking
 
         public void UnpackMovementData(NetIncomingMessage msg)
         {
-            // read position
-            NetData.NetPosition = msg.ReadVector2();
+            var pos = msg.ReadVector2();
+            var rot = msg.ReadFloat();
+            var vel = msg.ReadVector2();
+            var ang = msg.ReadFloat();
 
-            // read rotation
-            NetData.NetRotation = Quaternion.Euler(0, 0, msg.ReadFloat());
-
-            // read velocity
-            NetData.NetVelocity = msg.ReadVector2();
-
-            // read angular velocity
-            NetData.NetAngularVelocity = msg.ReadFloat();
+            NetData = new TransformData
+            {
+                NetPosition = pos,
+                NetRotation = Quaternion.Euler(0, 0, rot),
+                NetVelocity = vel,
+                NetAngularVelocity = ang
+            };
 
             if (OnMovementData != null)
                 OnMovementData(NetData.NetPosition, NetData.NetRotation, NetData.NetVelocity, NetData.NetAngularVelocity);
@@ -96,20 +103,22 @@ namespace Assets.Scripts.Networking
         public NetOutgoingMessage PackData(NetOutgoingMessage msg)
         {
             msg.Write(NetId);
-            msg.Write(AttachedPlayer.transform.position);
+            msg.Write((Vector2)AttachedPlayer.transform.position);
             msg.Write(Name);
+
+            msg.Write(new Vector3(Color.r, Color.g, Color.b));
 
             return msg;
         }
 
-        public NetOutgoingMessage PackControls(NetOutgoingMessage msg)
+        public void SendControls(Controls c)
         {
-            var c = Controls.Poll();
+            var cont = CreateMessage(Type.PlayerControlsUpdate);
 
-            msg.Write(c.Left);
-            msg.Write(c.Right);
+            cont.Write(c.Left);
+            cont.Write(c.Right);
 
-            return msg;
+            Client.Current.SendMessage(cont, NetDeliveryMethod.ReliableSequenced, 1);
         }
 
         public void UnpackControls(NetIncomingMessage msg)

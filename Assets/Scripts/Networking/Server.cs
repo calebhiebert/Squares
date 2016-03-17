@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Assets.Scripts.PlayerModules;
 using Lidgren.Network;
 using UnityEngine;
 
@@ -91,12 +92,14 @@ namespace Assets.Scripts.Networking
                     RegisterPlayer(msg);
                     break;
                 case NetObject.Type.PlayerJump:
+                    HandleJump(msg);
                     break;
                 case NetObject.Type.PlayerDataPack:
                     break;
                 case NetObject.Type.PlayerMouseUpdate:
                     break;
                 case NetObject.Type.PlayerShootBullet:
+                    HandleBullet(msg);
                     break;
                 case NetObject.Type.MapData:
                     HandleMapRequest(msg);
@@ -108,6 +111,47 @@ namespace Assets.Scripts.Networking
             Recycle(_incoming);
         }
 
+        private void HandleBullet(NetIncomingMessage msg)
+        {
+            var player = GetClientPlayer(msg.SenderConnection);
+            var bulletModule = player.AttachedPlayer.GetComponentInChildren<PlayerBulletModule>();
+
+            var origin = msg.ReadVector2();
+            var direction = msg.ReadVector2();
+
+            if (bulletModule.CanShoot)
+            {
+                bulletModule.CreateBullet(origin, direction);
+
+                var bulletMsg = CreateMessage(NetObject.Type.PlayerShootBullet);
+
+                bulletMsg.Write(player.NetId);
+
+                bulletMsg.Write(origin);
+                bulletMsg.Write(direction);
+
+                SendToAll(bulletMsg, NetDeliveryMethod.ReliableUnordered);
+            }
+        }
+
+        private void HandleJump(NetIncomingMessage msg)
+        {
+            var player = GetClientPlayer(msg.SenderConnection);
+
+            var jumpModule = player.AttachedPlayer.GetComponentInChildren<PlayerJumpModule>();
+
+            if (jumpModule.CanJump)
+            {
+                jumpModule.DoJump();
+
+                var jumpMsg = CreateMessage(NetObject.Type.PlayerJump);
+
+                jumpMsg.Write(player.NetId);
+
+                SendToAll(jumpMsg, NetDeliveryMethod.Unreliable);
+            }
+        }
+
         private void HandleControlsUpdate(NetIncomingMessage msg)
         {
             GetClientPlayer(msg.SenderConnection).UnpackControls(msg);
@@ -115,9 +159,7 @@ namespace Assets.Scripts.Networking
 
         private void HandleMapRequest(NetIncomingMessage msg)
         {
-            var response = CreateMessage();
-
-            response.Write((byte)NetObject.Type.MapData, NetObject.IndentifierNumOfBits);
+            var response = CreateMessage(NetObject.Type.MapData);
 
             response.Write(NetworkMain.Current.GameSceneName);
 
@@ -133,13 +175,15 @@ namespace Assets.Scripts.Networking
 
             var name = msg.ReadString();
 
+            var vec = msg.ReadVector3();
+
+            var color = new Color(vec.x, vec.y, vec.z);
+
             // spawn the player
-            var controller = NetworkMain.Current.SpawnPlayer(_idCounter++, Vector2.zero, name);
+            var controller = NetworkMain.Current.SpawnPlayer(_idCounter++, Vector2.zero, name, color);
 
             /* Respond to player request */
-            var registrationResponse = CreateMessage();
-
-            registrationResponse.Write((byte)NetObject.Type.RegisterPlayer, NetObject.IndentifierNumOfBits);
+            var registrationResponse = CreateMessage(NetObject.Type.RegisterPlayer);
 
             // send the player its fresh new id
             registrationResponse.Write(controller.NetPlayer.NetId);
@@ -149,6 +193,9 @@ namespace Assets.Scripts.Networking
 
             // send the player's name back for convinience purposes
             registrationResponse.Write(name);
+
+            // send the player's color back for convinience purposes
+            registrationResponse.Write(color);
 
             SendMessage(registrationResponse, msg.SenderConnection, NetDeliveryMethod.ReliableOrdered);
 
@@ -161,9 +208,7 @@ namespace Assets.Scripts.Networking
             {
                 if (player.NetId != controller.NetPlayer.NetId)
                 {
-                    var m = CreateMessage();
-
-                    m.Write((byte)NetObject.Type.PlayerDataPack, NetObject.IndentifierNumOfBits);
+                    var m = CreateMessage(NetObject.Type.PlayerDataPack);
 
                     m = player.PackData(m);
 
@@ -172,9 +217,7 @@ namespace Assets.Scripts.Networking
             }
 
             /* Send the newly created player to all other connected players */
-            var connectNotice = CreateMessage();
-
-            connectNotice.Write((byte) NetObject.Type.PlayerDataPack);
+            var connectNotice = CreateMessage(NetObject.Type.PlayerDataPack);
 
             connectNotice = controller.NetPlayer.PackData(connectNotice);
 
@@ -189,6 +232,14 @@ namespace Assets.Scripts.Networking
         private NetPlayer GetClientPlayer(byte netId)
         {
             return _attachedClient.Players[netId];
+        }
+
+        public NetOutgoingMessage CreateMessage(NetObject.Type type)
+        {
+            var msg = CreateMessage();
+            msg.Write((byte) type, NetObject.IndentifierNumOfBits);
+
+            return msg;
         }
     }
 }

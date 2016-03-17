@@ -14,11 +14,8 @@ namespace Assets.Scripts
         public static List<PlayerController> ActivePlayers = new List<PlayerController>();
 
         public float HorizontalMoveForce;
-        public float JumpForce;
         public int CopycatFrameDelay;
 
-        public LayerMask JumpMask;
-        public ParticleSystem JumpSystem;
         public TextMesh NameDisplay;
 
         private Rigidbody2D _rigidbody;
@@ -26,22 +23,14 @@ namespace Assets.Scripts
         private Queue<HistoryEntry> _historyQueue = new Queue<HistoryEntry>();
         private Controls _lastFrameControls = Controls.Poll();
 
-        private int _jumpAllowance;
-
         private GameObject _dummy;
 
-        void Start ()
+        private void Start ()
         {
             _collider = GetComponent<BoxCollider2D>();
             _rigidbody = GetComponent<Rigidbody2D>();
 
             NameDisplay.text = NetPlayer.Name;
-
-            NetPlayer.OnTransformUpdate += NetPosReceived;
-
-            NetPlayer.OnPhysicsUpdate += NetPhysicsReceived;
-
-            NetPlayer.OnMouseUpdate += NetMouseReceived;
 
             ActivePlayers.Add(this);
 
@@ -52,53 +41,25 @@ namespace Assets.Scripts
                 WorldMouseCoord = Vector2.zero
             };
 
+            NetPlayer.OnMovementData += OnMovementUpdate;
+
             _dummy = new GameObject("Dummy");
             _dummy.AddComponent<SpriteRenderer>().sprite = GetComponentInChildren<SpriteRenderer>().sprite;
             _dummy.GetComponent<SpriteRenderer>().color = Color.gray;
         }
 
-        private void NetMouseReceived(Vector2 globalMousePos)
-        {
-            WorldMousePos = globalMousePos;
-        }
-
-        private void NetPhysicsReceived(Vector2 netVelocity, float netAngularVelocity)
-        {
-            _rigidbody.velocity = netVelocity;
-            _rigidbody.angularVelocity = netAngularVelocity;
-        }
-
-        private void NetPosReceived(Vector2 netPosition, Quaternion netRotation)
+        private void OnMovementUpdate(Vector2 netPosition, Quaternion netRotation, Vector2 netVelocity, float netAngularVelocity)
         {
             transform.position = netPosition;
             transform.rotation = netRotation;
+            _rigidbody.velocity = netVelocity;
+            _rigidbody.angularVelocity = netAngularVelocity;
+
+            _dummy.transform.position = netPosition;
+            _dummy.transform.rotation = netRotation;
         }
 
-        void Update()
-        {
-            if (_collider.IsTouchingLayers(JumpMask))
-                _jumpAllowance = 1;
-
-            var he = new HistoryEntry
-            {
-                pos = transform.position,
-                rot = transform.rotation,
-                vel = _rigidbody.velocity,
-                angVel = _rigidbody.angularVelocity
-            };
-
-            _historyQueue.Enqueue(he);
-
-            if (_historyQueue.Count > CopycatFrameDelay)
-            {
-                var dq = _historyQueue.Dequeue();
-
-                _dummy.transform.position = dq.pos;
-                _dummy.transform.rotation = dq.rot;
-            }
-        }
-
-        void FixedUpdate()
+        private void FixedUpdate()
         {
             if (NetPlayer.IsLocal)
             {
@@ -106,27 +67,13 @@ namespace Assets.Scripts
 
                 if (_lastFrameControls.Right != CurrentControls.Right || _lastFrameControls.Left != CurrentControls.Left)
                 {
-                    var controls = NetPlayer.CreateMessage(NetObject.Type.PlayerControlsUpdate);
-
-                    controls = NetPlayer.PackControls(controls);
-
-                    Client.Current.SendMessage(controls, NetDeliveryMethod.ReliableSequenced, 1);
-
+                    NetPlayer.SendControls(CurrentControls);
                     _lastFrameControls = CurrentControls;
                 }
             }
 
             if (CurrentControls != null)
                 Move(CurrentControls);
-        }
-
-        private void Jump()
-        {
-            _rigidbody.AddForce(new Vector2(0, JumpForce));
-            _jumpAllowance--;
-
-            if(JumpSystem != null)
-                JumpSystem.Play();
         }
 
         void Move(Controls controls)
