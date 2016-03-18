@@ -13,6 +13,10 @@ namespace Assets.Scripts
     {
         public static List<PlayerController> ActivePlayers = new List<PlayerController>();
 
+        public delegate void CollisionEnterEvent(Collision2D col);
+
+        public event CollisionEnterEvent OnCollisionEnter;
+
         public float HorizontalMoveForce;
         public int CopycatFrameDelay;
 
@@ -124,6 +128,11 @@ namespace Assets.Scripts
             transform.rotation = Quaternion.identity;
             _rigidbody.velocity = Vector2.zero;
             _rigidbody.angularVelocity = 0;
+
+            if (NetworkMain.IsServer)
+            {
+                NetPlayer.ExplosionForceModifier = 50;
+            }
         }
 
         void Move(Controls controls)
@@ -155,6 +164,12 @@ namespace Assets.Scripts
             Destroy(gameObject);
         }
 
+        void OnCollisionEnter2D(Collision2D col)
+        {
+            if (OnCollisionEnter != null)
+                OnCollisionEnter(col);
+        }
+
         public void UpdateHistoryEntry()
         {
             var he = new HistoryEntry
@@ -166,6 +181,17 @@ namespace Assets.Scripts
             };
 
             LastUpdateEntry = he;
+        }
+
+        public void AddForce(float force, Vector3 position, float radius)
+        {
+            var calcForce = force*(NetPlayer.ExplosionForceModifier/100.0f);
+            _rigidbody.AddExplosionForce(calcForce, position, radius);
+
+            if (NetworkMain.IsServer)
+            {
+                NetPlayer.ExplosionForceModifier += 10;
+            }
         }
 
         public NetPlayer NetPlayer { get; set; }

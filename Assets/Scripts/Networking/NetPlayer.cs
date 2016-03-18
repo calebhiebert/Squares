@@ -37,7 +37,7 @@ namespace Assets.Scripts.Networking
         public int Lives;
 
         // hp
-        public int Hp;
+        private int _forceModifier;
 
         // do we have control of this netplayer
         public bool IsLocal;
@@ -141,6 +141,24 @@ namespace Assets.Scripts.Networking
                 OnControlsUpdate(l, r);
         }
 
+        private void PackForceModifier()
+        {
+            var update = CreateMessage(Type.PlayerForceModifier);
+            update.Write(NetId);
+            update.Write(ExplosionForceModifier);
+            Server.Current.SendToAll(update, null, NetDeliveryMethod.ReliableSequenced, 5);
+        }
+
+        public void UnpackForceModifier(NetIncomingMessage msg)
+        {
+            if(NetworkMain.IsServer)
+                return;
+
+            ExplosionForceModifier = msg.ReadInt32();
+
+            Debug.Log("Force Modifier for " + Name + " is now " + ExplosionForceModifier);
+        }
+
         public Color LighterColor
         {
             get
@@ -150,6 +168,17 @@ namespace Assets.Scripts.Networking
                     Color.g + NetworkMain.Current.ColorLightnessFactor, 
                     Color.b + NetworkMain.Current.ColorLightnessFactor
                     );
+            }
+        }
+
+        public int ExplosionForceModifier
+        {
+            get { return _forceModifier; }
+            set
+            {
+                _forceModifier = value;
+                if(NetworkMain.IsServer)
+                    PackForceModifier();
             }
         }
     }

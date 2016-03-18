@@ -29,11 +29,22 @@ namespace Assets.Scripts.Bullet_Weapon
             Destroy(gameObject);
 
             ImpactSystem.Current.MakeDamageIndicator(transform.position);
+            
+            if (other.gameObject.tag == "Player")
+            {
+                var p = other.gameObject.GetComponentInParent<PlayerController>();
+
+                if(Owner.IsLocal)
+                    AudioSource.PlayClipAtPoint(NetworkMain.Current.Ding, transform.position);
+
+                if(NetworkMain.IsServer)
+                    p.NetPlayer.ExplosionForceModifier += 50;
+            }
 
             foreach (var obj in Physics2D.OverlapCircleAll(transform.position, ExplosionRadius))
             {
-                if(obj.attachedRigidbody != null)
-                    obj.attachedRigidbody.AddExplosionForce(ExplosionForce, transform.position, ExplosionRadius);
+                if(obj.attachedRigidbody != null && obj.gameObject.tag == "Player")
+                    obj.GetComponentInParent<PlayerController>().AddForce(Force, transform.position, ExplosionRadius);
             }
         }
     }

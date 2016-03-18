@@ -32,6 +32,8 @@ namespace Assets.Scripts.PlayerModules
             _rigidbody = GetComponentInParent<Rigidbody2D>();
             _collider = GetComponentInParent<BoxCollider2D>();
 
+            Owner.AttachedPlayer.OnCollisionEnter += OnCollision;
+
             foreach (var sys in FinisherSystems)
             {
                 sys.startColor = Owner.LighterColor;
@@ -40,6 +42,27 @@ namespace Assets.Scripts.PlayerModules
             foreach (var sys in ParticleSystems)
             {
                 sys.startColor = Owner.LighterColor;
+            }
+        }
+
+        private void OnCollision(Collision2D col)
+        {
+            if (_pounding)
+            {
+                EndPound();
+
+                if (col.gameObject.tag == "Player")
+                {
+                    var p = col.gameObject.GetComponentInParent<PlayerController>();
+
+                    Debug.Log("Direct hit to the face on " + p.NetPlayer.Name);
+
+                    if(Owner.IsLocal)
+                        AudioSource.PlayClipAtPoint(NetworkMain.Current.Ding, transform.position);
+
+                    if (NetworkMain.IsServer)
+                        p.NetPlayer.ExplosionForceModifier += 150;
+                }
             }
         }
 
@@ -56,11 +79,6 @@ namespace Assets.Scripts.PlayerModules
             if (_pounding)
             {
                 _rigidbody.AddForce(new Vector2(0, -PoundForce));
-            }
-
-            if (_pounding && _collider.IsTouchingLayers(PoundMask))
-            {
-                EndPound();
             }
         }
 
@@ -80,9 +98,9 @@ namespace Assets.Scripts.PlayerModules
 
             foreach (var d in Physics2D.OverlapCircleAll(transform.position, PoundForceRadius))
             {
-                if (d.attachedRigidbody != null && d.attachedRigidbody != _rigidbody)
+                if (d.attachedRigidbody != null && d.attachedRigidbody != _rigidbody && d.gameObject.tag == "Player")
                 {
-                    d.attachedRigidbody.AddExplosionForce(PoundImpactForce, transform.position, PoundForceRadius);
+                    d.GetComponentInParent<PlayerController>().AddForce(PoundImpactForce, transform.position, PoundForceRadius);
                 }
             }
         }
@@ -99,8 +117,6 @@ namespace Assets.Scripts.PlayerModules
 
         private void SendPoundCommand()
         {
-            //DoPound();
-
             Client.Current.SendMessage(Client.Current.CreateMessage(NetObject.Type.PlayerGroundPound), NetDeliveryMethod.Unreliable);
         }
 

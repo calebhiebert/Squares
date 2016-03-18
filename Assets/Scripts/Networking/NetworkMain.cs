@@ -17,6 +17,7 @@ namespace Assets.Scripts.Networking
         public GameObject PlayerPrefab;
         public Image ColorPickerImage;
         public InputField NameInputField;
+        public AudioClip Ding;
 
         public Slider RSlider;
         public Slider GSlider;
@@ -66,6 +67,11 @@ namespace Assets.Scripts.Networking
             if (Client.Current != null && Client.Current.ServerConnection != null)
             {
                 GUI.Label(new Rect(10, 10, 100, 20), "Ping: " + (int)(Client.Current.ServerConnection.AverageRoundtripTime * 1000));
+            }
+
+            if (Client.Current != null && Client.Current.LocalPlayer != null)
+            {
+                GUI.Label(new Rect(10, 25, 100, 20), "Dmg: " + Client.Current.LocalPlayer.ExplosionForceModifier + "%");
             }
         }
 

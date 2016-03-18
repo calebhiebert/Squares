@@ -130,9 +130,20 @@ namespace Assets.Scripts.Networking
                 case NetObject.Type.GameTimeScale:
                     NetworkMain.Current.ChangeTimeScale(msg.ReadFloat(), msg.ReadFloat());
                     break;
+                case NetObject.Type.PlayerForceModifier:
+                    HandleForceModifier(msg);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        private void HandleForceModifier(NetIncomingMessage msg)
+        {
+            var id = msg.ReadByte();
+
+            if(_players.ContainsKey(id))
+                _players[id].UnpackForceModifier(msg);
         }
 
         private void HandleDisconnect(NetIncomingMessage msg)
@@ -256,6 +267,11 @@ namespace Assets.Scripts.Networking
             msg.Write((byte) type, NetObject.IndentifierNumOfBits);
 
             return msg;
+        }
+
+        public NetPlayer LocalPlayer
+        {
+            get { return _localPlayer; }
         }
     }
 }
