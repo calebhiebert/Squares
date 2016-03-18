@@ -1,31 +1,39 @@
-﻿using UnityEngine;
-using System.Collections;
+using UnityEngine;
 
-public class ImpactSystem : MonoBehaviour
+namespace Assets.Scripts
 {
-
-    public static ImpactSystem Current;
-
-    public GameObject Explode;
-    public GameObject Hit;
-    public GameObject Disconnect;
-
-	void Awake ()
-	{
-	    Current = this;
-	}
-
-    public GameObject MakeImpact(GameObject impact, Vector2 position, float force, Color color)
+    public class ImpactSystem : MonoBehaviour
     {
-        var system = (GameObject) Instantiate(impact, position, Quaternion.identity);
 
-        var particles = system.GetComponentInChildren<ParticleSystem>();
+        public static ImpactSystem Current;
 
-        //set color
-        particles.startColor = color;
+        public GameObject Explode;
+        public GameObject Hit;
+        public GameObject Disconnect;
+        public GameObject DamageIndicator;
 
-        Destroy(system, 3f);
+        void Awake ()
+        {
+            Current = this;
+        }
 
-        return system;
+        public GameObject MakeImpact(GameObject impact, Vector2 position, float force, Color color)
+        {
+            var system = (GameObject) Instantiate(impact, position, Quaternion.identity);
+
+            var particles = system.GetComponentInChildren<ParticleSystem>();
+
+            //set color
+            particles.startColor = color;
+
+            Destroy(system, 3f);
+
+            return system;
+        }
+
+        public GameObject MakeDamageIndicator(Vector2 position)
+        {
+            return (GameObject) Instantiate(DamageIndicator, position, Quaternion.identity);
+        }
     }
 }

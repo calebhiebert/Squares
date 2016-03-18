@@ -16,11 +16,16 @@ namespace Assets.Scripts
         public float HorizontalMoveForce;
         public int CopycatFrameDelay;
 
+        public Vector2 PositionSnapThreshold;
+        public Vector2 VelocitySnapThreshold;
+        public float RotationSnapThreshold;
+
         public TextMesh NameDisplay;
 
         private Rigidbody2D _rigidbody;
-        private Queue<HistoryEntry> _historyQueue = new Queue<HistoryEntry>();
-        private Controls _lastFrameControls = new Controls().Poll();
+        private Controls _lastFrameControls;
+
+        public HistoryEntry LastUpdateEntry;
 
         private GameObject _dummy;
 
@@ -39,6 +44,20 @@ namespace Assets.Scripts
                 WorldMouseCoord = Vector2.zero
             };
 
+            _lastFrameControls = new Controls()
+            {
+                Left = false,
+                Right = false,
+                WorldMouseCoord = Vector2.zero
+            };
+
+            NetPlayer.OnControlsUpdate += (left, right) =>
+            {
+                CurrentControls.Left = left;
+                CurrentControls.Right = right;
+                Debug.Log("Controls: " + left + " " + right);
+            };
+
             NetPlayer.OnMovementData += OnMovementUpdate;
 
             _dummy = new GameObject("Dummy");
@@ -48,8 +67,23 @@ namespace Assets.Scripts
 
         private void OnMovementUpdate(Vector2 netPosition, Quaternion netRotation, Vector2 netVelocity, float netAngularVelocity)
         {
-            transform.position = netPosition;
-            transform.rotation = netRotation;
+            var posDiff = (netPosition - (Vector2) transform.position).Abs();
+            var rotDiff = Mathf.Abs(Quaternion.Angle(netRotation, transform.rotation));
+            var velDiff = (netVelocity - _rigidbody.velocity).Abs();
+
+            var newPos = transform.position;
+
+            if (posDiff.x > PositionSnapThreshold.x)
+                newPos.x = netPosition.x;
+
+            if (posDiff.y > PositionSnapThreshold.y)
+                newPos.y = netPosition.y;
+
+            if (rotDiff > RotationSnapThreshold)
+                transform.rotation = netRotation;
+
+            transform.position = newPos;
+
             _rigidbody.velocity = netVelocity;
             _rigidbody.angularVelocity = netAngularVelocity;
 
@@ -66,7 +100,9 @@ namespace Assets.Scripts
                 if (_lastFrameControls.Right != CurrentControls.Right || _lastFrameControls.Left != CurrentControls.Left)
                 {
                     NetPlayer.SendControls(CurrentControls);
-                    _lastFrameControls = CurrentControls;
+
+                    _lastFrameControls.Left = CurrentControls.Left;
+                    _lastFrameControls.Right = CurrentControls.Right;
                 }
             }
 
@@ -117,6 +153,19 @@ namespace Assets.Scripts
             Destroy(_dummy.gameObject);
 
             Destroy(gameObject);
+        }
+
+        public void UpdateHistoryEntry()
+        {
+            var he = new HistoryEntry
+            {
+                pos = transform.position,
+                rot = transform.rotation,
+                vel = _rigidbody.velocity,
+                angVel = _rigidbody.angularVelocity
+            };
+
+            LastUpdateEntry = he;
         }
 
         public NetPlayer NetPlayer { get; set; }

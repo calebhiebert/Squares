@@ -18,7 +18,7 @@ namespace Assets.Scripts.Networking
 
         private byte _idCounter = 0;
 
-        private float _lastUpdateTime = 0;
+        private float _lastUpdate = 0;
 
         public Server(NetPeerConfiguration config, Client attachedClient) : base(config)
         {
@@ -60,10 +60,10 @@ namespace Assets.Scripts.Networking
                 }
             }
 
-            if (Time.time > _lastUpdateTime + 1/NetworkMain.Current.ServerUpdatesPerSecond)
+            if (Time.time > _lastUpdate + 1/NetworkMain.Current.ServerUpdatesPerSecond)
             {
+                _lastUpdate = Time.time;
                 SendUpdates();
-                _lastUpdateTime = Time.time;
             }
         }
 
@@ -83,16 +83,28 @@ namespace Assets.Scripts.Networking
             foreach (var player in _players.Values)
             {
                 /* Send Positions To Everyone */
-                var movement = CreateMessage();
-                
-                movement.Write((byte)NetObject.Type.PlayerMovementUpdate, NetObject.IndentifierNumOfBits);
-
-                movement.Write(player.NetId);
-
-                movement = player.PackMovementData(movement);
-
-                SendToAll(movement, null, NetDeliveryMethod.UnreliableSequenced, 3);
+                SendMovementUpdate(player);
             }
+        }
+
+        private void SendMovementUpdate(NetPlayer player)
+        {
+            var he = player.AttachedPlayer.LastUpdateEntry;
+
+            var diff = ((Vector2)player.AttachedPlayer.transform.position - he.pos).Abs();
+
+            if (diff.x > 0 || diff.y > 0)
+            {
+                var msg = CreateMessage(NetObject.Type.PlayerMovementUpdate);
+
+                msg.Write(player.NetId);
+
+                msg = player.PackMovementData(msg);
+
+                SendToAll(msg, null, NetDeliveryMethod.UnreliableSequenced, 2);
+            }
+
+            player.AttachedPlayer.UpdateHistoryEntry();
         }
 
         private void HandleData(NetIncomingMessage msg)
@@ -144,6 +156,8 @@ namespace Assets.Scripts.Networking
                 poundMsg.Write(player.NetId);
 
                 SendToAll(poundMsg, NetDeliveryMethod.ReliableUnordered);
+
+                SendMovementUpdate(player);
             }
         }
 
@@ -187,6 +201,8 @@ namespace Assets.Scripts.Networking
                 jumpMsg.Write(player.NetId);
 
                 SendToAll(jumpMsg, NetDeliveryMethod.Unreliable);
+
+                SendMovementUpdate(player);
             }
         }
 

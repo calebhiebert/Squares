@@ -95,7 +95,7 @@ GameObject:
   - 4: {fileID: 457148284}
   - 212: {fileID: 457148286}
   - 61: {fileID: 457148285}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: GroundPlane (5)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -188,6 +188,7 @@ MonoBehaviour:
   Explode: {fileID: 103046, guid: a269090c15fd0094583a4d60c8c9bbbd, type: 2}
   Hit: {fileID: 150332, guid: d0956c19b4684804183b6a8204139fde, type: 2}
   Disconnect: {fileID: 196856, guid: 8e2ed82c1410b96439b358b6290d5c08, type: 2}
+  DamageIndicator: {fileID: 167600, guid: 40b68a6bb92427f458d41eb3f98ae05b, type: 2}
 --- !u!4 &759936053
 Transform:
   m_ObjectHideFlags: 0
@@ -251,7 +252,7 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 4: {fileID: 1410828195}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Level
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -285,7 +286,7 @@ GameObject:
   - 4: {fileID: 1897280989}
   - 212: {fileID: 1897280988}
   - 61: {fileID: 1897280987}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: GroundPlane
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -358,7 +359,7 @@ GameObject:
   - 4: {fileID: 2039592423}
   - 212: {fileID: 2039592425}
   - 61: {fileID: 2039592424}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: GroundPlane (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -431,7 +432,7 @@ GameObject:
   - 4: {fileID: 2066608951}
   - 212: {fileID: 2066608953}
   - 61: {fileID: 2066608952}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: GroundPlane (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2138,7 +2139,7 @@ GameObject:
   - 4: {fileID: 2145451039}
   - 212: {fileID: 2145451041}
   - 61: {fileID: 2145451040}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: GroundPlane (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}

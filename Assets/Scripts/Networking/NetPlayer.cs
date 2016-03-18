@@ -10,6 +10,10 @@ namespace Assets.Scripts.Networking
 
         public delegate void MouseUpdateEvent(Vector2 globalMousePos);
 
+        public delegate void ControlsUpdateEvent(bool left, bool right);
+
+        public event ControlsUpdateEvent OnControlsUpdate;
+
         public event MovementDataEvent OnMovementData;
 
         public event MouseUpdateEvent OnMouseUpdate;
@@ -31,6 +35,9 @@ namespace Assets.Scripts.Networking
 
         // remaining lives
         public int Lives;
+
+        // hp
+        public int Hp;
 
         // do we have control of this netplayer
         public bool IsLocal;
@@ -127,8 +134,11 @@ namespace Assets.Scripts.Networking
 
         public void UnpackControls(NetIncomingMessage msg)
         {
-            AttachedPlayer.CurrentControls.Left = msg.ReadBoolean();
-            AttachedPlayer.CurrentControls.Right = msg.ReadBoolean();
+            var l = msg.ReadBoolean();
+            var r = msg.ReadBoolean();
+
+            if (OnControlsUpdate != null)
+                OnControlsUpdate(l, r);
         }
 
         public Color LighterColor

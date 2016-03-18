@@ -28,6 +28,8 @@ namespace Assets.Scripts.Bullet_Weapon
 
             Destroy(gameObject);
 
+            ImpactSystem.Current.MakeDamageIndicator(transform.position);
+
             foreach (var obj in Physics2D.OverlapCircleAll(transform.position, ExplosionRadius))
             {
                 if(obj.attachedRigidbody != null)
