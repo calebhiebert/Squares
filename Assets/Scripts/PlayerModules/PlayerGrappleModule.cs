@@ -32,6 +32,14 @@ namespace Assets.Scripts.PlayerModules
                     _ropd = true;
                 }
             }
+
+            if (_ropd && Input.mouseScrollDelta.y > 0)
+            {
+                GrappleRope.RemoveSegment();
+            } else if (_ropd && Input.mouseScrollDelta.y < 0)
+            {
+                GrappleRope.AddSegment();
+            }
         }
 
         private void MakeRope()
