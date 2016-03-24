@@ -27,8 +27,6 @@ namespace Assets.Scripts.Bullet_Weapon
             Destroy(Trail.gameObject, 2);
 
             Destroy(gameObject);
-
-            ImpactSystem.Current.MakeDamageIndicator(transform.position);
             
             if (other.gameObject.tag == "Player")
             {
@@ -37,14 +35,21 @@ namespace Assets.Scripts.Bullet_Weapon
                 if(Owner.IsLocal)
                     AudioSource.PlayClipAtPoint(NetworkMain.Current.Ding, transform.position);
 
-                if(NetworkMain.IsServer)
-                    p.NetPlayer.ExplosionForceModifier += 50;
+                    p.gameObject.ApplyDamage(50, transform.position);
             }
 
             foreach (var obj in Physics2D.OverlapCircleAll(transform.position, ExplosionRadius))
             {
-                if(obj.attachedRigidbody != null && obj.gameObject.tag == "Player")
+                if (obj.attachedRigidbody != null && obj.gameObject.tag == "Player")
+                {
                     obj.GetComponentInParent<PlayerController>().AddForce(Force, transform.position, ExplosionRadius);
+
+                    if (obj.attachedRigidbody != Owner.AttachedPlayer.GetComponent<Rigidbody2D>())
+                    {
+                        obj.gameObject.ApplyDamage(10, transform.position);
+                    }
+                }
+
             }
         }
     }

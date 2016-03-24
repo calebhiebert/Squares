@@ -1142,6 +1142,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PlayerPrefab: {fileID: 123776, guid: 7e091b2b18e19f447b2acd69c32f674b, type: 2}
+  GameUiPrefab: {fileID: 122002, guid: 77c680ac97d6a0b478855b9b1858e5b4, type: 2}
   ColorPickerImage: {fileID: 396227599}
   NameInputField: {fileID: 1766472078}
   Ding: {fileID: 8300000, guid: c6fb7b8acb8a9704c8cf67b0c2bfd81d, type: 3}

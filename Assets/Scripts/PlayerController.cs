@@ -187,11 +187,6 @@ namespace Assets.Scripts
         {
             var calcForce = force*(NetPlayer.ExplosionForceModifier/100.0f);
             _rigidbody.AddExplosionForce(calcForce, position, radius);
-
-            if (NetworkMain.IsServer)
-            {
-                NetPlayer.ExplosionForceModifier += 10;
-            }
         }
 
         public NetPlayer NetPlayer { get; set; }

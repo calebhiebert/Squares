@@ -60,8 +60,7 @@ namespace Assets.Scripts.PlayerModules
                     if(Owner.IsLocal)
                         AudioSource.PlayClipAtPoint(NetworkMain.Current.Ding, transform.position);
 
-                    if (NetworkMain.IsServer)
-                        p.NetPlayer.ExplosionForceModifier += 150;
+                    p.gameObject.ApplyDamage(150, col.contacts[0].point);
                 }
             }
         }

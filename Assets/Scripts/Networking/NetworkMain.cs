@@ -15,6 +15,7 @@ namespace Assets.Scripts.Networking
 
         public delegate void SceneLoadedEvent(string sceneName);
         public GameObject PlayerPrefab;
+        public GameObject GameUiPrefab;
         public Image ColorPickerImage;
         public InputField NameInputField;
         public AudioClip Ding;
@@ -210,6 +211,8 @@ namespace Assets.Scripts.Networking
             if (lvl == 1)
             {
                 Client.Current.Register(Current.PlayerName, Current.PlayerColor);
+
+                Instantiate(GameUiPrefab);
             }
         }
 

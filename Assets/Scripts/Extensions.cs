@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Assets.Scripts.Networking;
 using UnityEngine;
 
 namespace Assets.Scripts
@@ -42,6 +43,21 @@ namespace Assets.Scripts
         public static Vector2 Abs(this Vector2 vector)
         {
             return new Vector2(Mathf.Abs(vector.x), Mathf.Abs(vector.y));
+        }
+
+        public static void ApplyDamage(this GameObject playerObject, int dmg, Vector2 dmgSource)
+        {
+            if(playerObject.tag != "Player")
+                return;
+
+            var controller = playerObject.GetComponentInParent<PlayerController>();
+
+            ImpactSystem.Current.MakeDamageIndicator(playerObject.transform.position, dmg);
+
+            if (NetworkMain.IsServer)
+            {
+                controller.NetPlayer.ExplosionForceModifier += dmg;
+            }
         }
     }
 }

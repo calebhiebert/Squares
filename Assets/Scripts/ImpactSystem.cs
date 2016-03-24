@@ -31,9 +31,15 @@ namespace Assets.Scripts
             return system;
         }
 
-        public GameObject MakeDamageIndicator(Vector2 position)
+        public GameObject MakeDamageIndicator(Vector2 position, int dmg)
         {
-            return (GameObject) Instantiate(DamageIndicator, position, Quaternion.identity);
+            var di = (GameObject) Instantiate(DamageIndicator, position, Quaternion.identity);
+
+            var tm = di.GetComponentInChildren<TextMesh>();
+
+            tm.text = dmg + "%";
+
+            return di;
         }
     }
 }
